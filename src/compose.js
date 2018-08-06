@@ -1,3 +1,4 @@
+// @flow
 const composeCssTheme = (target, mixin) => {
   if (!mixin) return target
 
@@ -5,7 +6,7 @@ const composeCssTheme = (target, mixin) => {
 
     if (mixin.locals) {
       mixin.toCSS = function() {
-        return this.map(function(item) {
+        return this.map(item => {
           const content = item[1] || ''
 
           if ( item[2] ) {
@@ -42,7 +43,7 @@ const composeCssTheme = (target, mixin) => {
   }, target)
 }
 
-export default (target = {}, ...themes) => ({
+export default (target: Object = {}, ...themes: Array<Object>) => ({
   themed: themes.reduce((acc, curr) => composeCssTheme(acc, curr), target),
   get theme() {
     return this.themed.locals ? this.themed.locals : this.themed
