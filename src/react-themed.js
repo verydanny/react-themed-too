@@ -7,18 +7,11 @@ import compose from './compose'
 
 function createThemed( context ) {
 
-  function flush( Component ) {
-    
-  }
-
-  const reactThemed = {
-    flush,
+  return {
     themed: themed( context ),
     ThemeProvider: ThemeProvider( context ),
     compose
   }
-
-  return reactThemed
 }
 
 export default createThemed

@@ -5,7 +5,6 @@ import createThemed from './react-themed'
 const Context = React.createContext()
 
 export const {
-  flush,
   themed,
   ThemeProvider,
   compose

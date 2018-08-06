@@ -9,14 +9,16 @@ function ThemeProvider( context ) {
     }
 
     render() {
-      const { theme, children } = this.props
-      const newContext = {
-        theme,
-        compose
-      }
+      const { children } = this.props
+      let { theme } = this.props
+
+      // Everything will have locals
+      theme.locals = !theme.locals ? theme : theme.locals
+
+      console.log(theme)
 
       return (
-        <context.Provider value={ newContext }>
+        <context.Provider value={ theme }>
           { children }
         </context.Provider>
       )

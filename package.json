@@ -11,21 +11,21 @@
     "build": "yarn babel ./src -out-dir ./lib"
   },
   "devDependencies": {
-    "@babel/cli": "^7.0.0-beta.55",
-    "@babel/core": "^7.0.0-beta.55",
-    "@babel/plugin-proposal-class-properties": "^7.0.0-beta.55",
-    "@babel/plugin-proposal-decorators": "^7.0.0-beta.55",
-    "@babel/plugin-proposal-object-rest-spread": "^7.0.0-beta.55",
-    "@babel/plugin-transform-modules-commonjs": "^7.0.0-beta.55",
-    "@babel/preset-flow": "^7.0.0-beta.55",
-    "@babel/preset-react": "^7.0.0-beta.55",
+    "@babel/cli": "^7.0.0-beta.56",
+    "@babel/core": "^7.0.0-beta.56",
+    "@babel/plugin-proposal-class-properties": "^7.0.0-beta.56",
+    "@babel/plugin-proposal-decorators": "^7.0.0-beta.56",
+    "@babel/plugin-proposal-object-rest-spread": "^7.0.0-beta.56",
+    "@babel/plugin-transform-modules-commonjs": "^7.0.0-beta.56",
+    "@babel/preset-flow": "^7.0.0-beta.56",
+    "@babel/preset-react": "^7.0.0-beta.56",
     "babel-plugin-transform-es2015-modules-simple-commonjs": "^0.3.0",
-    "flow-bin": "^0.77.0",
-    "hoist-non-react-statics": "^3.0.1",
-    "react": "^16.4.2"
+    "flow-bin": "^0.78.0",
+    "hoist-non-react-statics": "^3.0.1"
   },
   "dependencies": {
     "css": "^2.2.3",
-    "css-parse": "^2.0.0"
+    "css-parse": "^2.0.0",
+    "react": "^16.4.2"
   }
 }
