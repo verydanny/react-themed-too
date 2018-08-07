@@ -1,6 +1,8 @@
 // @flow
-type CssLoaderT = {
-  locals?: Object,
+export type CssLoaderT = {
+  locals?: {
+    [x: string]: string
+  },
   toCSS?: ( useSourceMap: boolean ) => string,
   i?: ( modules: string | Object, mediaQuery: string ) => Array<string>,
 }

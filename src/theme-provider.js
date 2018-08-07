@@ -15,8 +15,6 @@ function ThemeProvider( context ) {
       // Everything will have locals
       theme.locals = !theme.locals ? theme : theme.locals
 
-      console.log(theme)
-
       return (
         <context.Provider value={ theme }>
           { children }

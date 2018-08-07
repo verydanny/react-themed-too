@@ -5,7 +5,7 @@ import themed from './themed'
 import ThemeProvider from './theme-provider'
 import compose from './compose'
 
-function createThemed( context ) {
+function createThemed( context: React.Context<any> ) {
 
   return {
     themed: themed( context ),

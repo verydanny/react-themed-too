@@ -1,6 +1,7 @@
 // @flow
 import * as React from 'react'
 import hoist from 'hoist-non-react-statics'
+import type { CssLoaderT } from './compose'
 
 import compose from './compose'
 
@@ -34,8 +35,8 @@ const create = (Component, config) => {
   const themes = config.themes.slice()
   let thisTheme
 
-  const buildContext = ( theme ) => {
-    const shared = theme.locals
+  const buildContext = ( reactThemed ) => {
+    const shared = reactThemed.locals ? reactThemed.locals : {}
 
     themes.forEach(theme => {
       if (Array.isArray(theme)) {
@@ -56,14 +57,22 @@ const create = (Component, config) => {
   // Do the thang
   return () => (
     <context.Consumer>
-      { (theme) => buildContext( theme ) }
+      { (theme: CssLoaderT ) => buildContext( theme ) }
     </context.Consumer>
   )
 }
 
-const factory = defaults => {
-  const themed = ( context: React.Context<any> ) => (theme: any = [], options: any) => (Component: React.ComponentType<any>) => {
-    let themes = []
+type FactoryDefaultsT = {|
+  compose: (target ? : Object, ...themes: Array < CssLoaderT > ) => Object,
+  pure?: boolean,
+  propName?: string,
+  context?: any,
+  themes?: string & RegExp & Array<CssLoaderT>
+|}
+
+const factory = (defaults: FactoryDefaultsT) => {
+  const themed = ( context: React.Context<any> ) => (theme: ThemeT, options: FactoryDefaultsT ) => (Component: React.ComponentType<any>) => {
+    let themes: Array<any> = []
     let config = { ...defaults }
 
     if (theme) {
