@@ -1,11 +1,17 @@
 import * as React from 'react'
+import { isServer } from './utils'
 import compose from './compose'
+import { contextSecret } from './const'
 
-function ThemeProvider( context ) {
+export default function ThemeProvider( context, GlobalContext ) {
+
   return class ThemeProvider extends React.PureComponent {
     constructor(props) {
       super(props)
 
+      if (this.props.theme && isServer()) {
+        GlobalContext[ contextSecret ].theme = this.props.theme
+      }
     }
 
     render() {
@@ -23,5 +29,3 @@ function ThemeProvider( context ) {
     }
   }
 }
-
-export default ThemeProvider

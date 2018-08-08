@@ -26,6 +26,9 @@
   "dependencies": {
     "css": "^2.2.3",
     "css-parse": "^2.0.0",
-    "react": "^16.4.2"
+    "html-tokenize": "^2.0.0",
+    "multipipe": "^2.0.3",
+    "react": "^16.4.2",
+    "through": "^2.3.8"
   }
 }
