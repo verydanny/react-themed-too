@@ -1,9 +1,10 @@
 // @flow
+import * as React from 'react'
 export type CssLoaderT = {
-  locals?: {
+  locals: {
     [x: string]: string
   },
-  toCSS?: ( useSourceMap: boolean ) => string,
+  toCSS?: ( useSourceMap: boolean ) => Array<string>,
   i?: ( modules: string | Object, mediaQuery: string ) => Array<string>,
 }
 

@@ -63,7 +63,7 @@ const create = (Component, config) => {
 }
 
 type FactoryDefaultsT = {|
-  compose: (target ? : Object, ...themes: Array < CssLoaderT > ) => Object,
+  compose: (target ? : Object, themes: Array < CssLoaderT > ) => Object,
   pure?: boolean,
   propName?: string,
   context?: any,
@@ -71,7 +71,7 @@ type FactoryDefaultsT = {|
 |}
 
 const factory = (defaults: FactoryDefaultsT) => {
-  const themed = ( context: React.Context<any> ) => (theme: ThemeT, options: FactoryDefaultsT ) => (Component: React.ComponentType<any>) => {
+  const themed = ( context: React.Context<any> ) => (theme: CssLoaderT, options: FactoryDefaultsT ) => (Component: React.ComponentType<any>) => {
     let themes: Array<any> = []
     let config = { ...defaults }
 
