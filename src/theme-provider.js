@@ -10,7 +10,7 @@ export default function ThemeProvider( context, GlobalContext ) {
       super(props)
 
       if (this.props.theme && isServer()) {
-        GlobalContext[ contextSecret ].theme = this.props.theme
+        GlobalContext[ contextSecret ].styles = this.props.theme.styles ? this.props.theme.styles : this.props.theme
       }
     }
 
@@ -18,8 +18,7 @@ export default function ThemeProvider( context, GlobalContext ) {
       const { children } = this.props
       let { theme } = this.props
 
-      // Everything will have locals
-      theme.locals = !theme.locals ? theme : theme.locals
+      theme = theme.theme ? theme.theme : theme
 
       return (
         <context.Provider value={ theme }>

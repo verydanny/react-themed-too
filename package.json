@@ -28,7 +28,9 @@
     "css-parse": "^2.0.0",
     "html-tokenize": "^2.0.0",
     "multipipe": "^2.0.3",
+    "postcss-selector-parser": "^5.0.0-rc.3",
     "react": "^16.4.2",
+    "simple-tokenizer": "^1.0.2",
     "through": "^2.3.8"
   }
 }

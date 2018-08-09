@@ -1,5 +1,9 @@
 // @flow
-import * as React from 'react'
+import simpleTokenizer from 'simple-tokenizer';
+import { isServer } from './utils'
+
+const tokenizer = new simpleTokenizer()
+
 export type CssLoaderT = {
   locals: {
     [x: string]: string
@@ -33,31 +37,13 @@ const toComment = (sourceMap) => {
   return `/*# ${data} */`
 }
 
-const composeCssTheme = (target, mixin) => {
+const composeTheme = (target, mixin) => {
   if (!mixin) return target
 
   return Object.keys(mixin).reduce((acc, key) => {
-
-    if (mixin.locals) {
-      // my own CSS maker, ignores scoping issues
-      mixin.toCSS = function( useSourceMap ) {
-        return this.map(item => {
-          const content = mapCssToSource(item, useSourceMap)
-
-          if ( item[2] ) {
-            return `@media ${ item[2] } { ${ content } }`
-          }
-
-          return content
-        }).join("")
-      }
-
-      acc.css = !acc.css ? `${ mixin.toCSS() }` :  `${ acc.css += mixin.toCSS() }`
-    }
-
     switch (typeof acc[key]) {
       case 'undefined':
-        if (mixin[key] !== null && !Array.isArray(mixin[key]) && typeof mixin[key] !== 'function') {
+        if (mixin[key] !== null) {
           acc[key] = mixin[key]
         }
         break
@@ -68,7 +54,7 @@ const composeCssTheme = (target, mixin) => {
         break
       case 'object':
         if (typeof mixin[key] === 'object') {
-          composeCssTheme(acc[key], mixin[key])
+          composeTheme(acc[key], mixin[key])
         }
         break
       default:
@@ -78,8 +64,121 @@ const composeCssTheme = (target, mixin) => {
   }, target)
 }
 
+function compileCssObject( useSourceMap ) {
+  let cssObject = {}
+
+  for (let i = 0; i < this.length; ++i) {
+    const content = mapCssToSource(this[i], useSourceMap)
+
+    if ( this[i][2] ) {
+      cssObject = {
+        mediaQuery: `@media ${ this[i][2] } { ${ content } }`,
+        content: content
+      }
+    }
+
+    cssObject = { content: content }
+  }
+
+  return cssObject
+}
+
+function compose( theme, target ) {
+
+  if (theme.locals) {
+    const locals: Object = theme.locals
+    const css = compileCssObject.call(theme, false)
+
+    if (css.content) {
+      const tokenizedCssArray = tokenizer.tokenize(css.content)
+      const cssRulesSelectorsObject = cssRulesGenerate( tokenizedCssArray )
+
+      return Object.keys(locals).reduce((acc, curr) => {
+        const localName = locals[curr]
+        const match = new RegExp(localName)
+        const css = Object.keys(cssRulesSelectorsObject).reduce(( acc, cssSelector ) => {
+          if (match.test(cssSelector)) {
+            acc += cssRulesSelectorsObject[ cssSelector ]
+          }
+
+          return acc
+        }, '')
+
+        const styleObject = {
+          [curr]: {
+            css: css,
+            local: localName
+          }
+        }
+
+        const themeObject = {
+          [curr]: localName
+        }
+
+        if (!acc.theme) {
+          acc.theme = themeObject
+        } else if (acc.theme[curr]) {
+          acc.theme[curr] = [acc.theme[curr], target.theme[curr]].filter(x => x).join(" ")
+        } else {
+          acc.theme = {
+            ...acc.theme,
+            ...themeObject
+          }
+        }
+
+        if (acc.styles) {
+          acc.styles = {
+            ...acc.styles,
+            ...styleObject
+          }
+        } else {
+          acc.styles = styleObject
+        }
+
+        return acc
+      }, target)
+    }
+  }
+  
+  return composeTheme(theme, target)
+}
+
+function cssRulesGenerate( cssTokenizedArray ) {
+  let returnObj = {}
+  let currentSelector
+
+  console.log(cssTokenizedArray)
+
+  for (let i = 0; i < cssTokenizedArray.length; ++i) {
+    let currentItem = cssTokenizedArray[i]
+
+    if (currentItem.token === '{' && !currentItem.atRule) {
+      currentSelector = currentItem.code
+      returnObj[currentSelector] = `${ currentItem.code } { `
+    } else if (currentItem.token === 'rule') {
+      returnObj[currentSelector] += `${ currentItem.key }: ${ currentItem.value };`
+    } else if (currentItem.token === '}') {
+      returnObj[currentSelector] += ' }'
+    }
+  }
+
+  return returnObj
+}
+
 export default (target: Object = {}, ...themes: Array<CssLoaderT>) => {
-  return {
-    ...themes.reduce((acc, curr) => composeCssTheme(acc, curr), target)
+
+  if ( isServer() ) {
+    return themes.reduce((acc, curr) => {
+      if (!acc) {
+        acc = compose(curr, target)
+      }
+  
+      return {
+        ...acc,
+        ...compose(curr, target)
+      }
+    }, target)
+  } else {
+    return themes.reduce((acc, curr) => composeTheme(target, curr), target)
   }
 }
