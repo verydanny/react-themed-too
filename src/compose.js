@@ -1,5 +1,5 @@
 // @flow
-import simpleTokenizer from 'simple-tokenizer';
+import simpleTokenizer from 'simple-tokenizer'
 import { isServer } from './utils'
 
 const tokenizer = new simpleTokenizer()
@@ -8,8 +8,8 @@ export type CssLoaderT = {
   locals: {
     [x: string]: string
   },
-  toCSS?: ( useSourceMap: boolean ) => Array<string>,
-  i?: ( modules: string | Object, mediaQuery: string ) => Array<string>,
+  toCSS?: (useSourceMap: boolean) => Array<string>,
+  i?: (modules: string | Object, mediaQuery: string) => Array<string>
 }
 
 const mapCssToSource = (item, useSourceMap) => {
@@ -22,22 +22,36 @@ const mapCssToSource = (item, useSourceMap) => {
 
   if (useSourceMap && typeof btoa === 'function') {
     const sourceMapping = toComment(cssMap)
-    const sourceUrls = cssMap.sources.map(source => `/*# sourceURL=${cssMap.sourceRoot + source}*/`)
+    const sourceUrls = cssMap.sources.map(
+      source => `/*# sourceURL=${cssMap.sourceRoot + source}*/`
+    )
 
-    return [content].concat(sourceUrls).concat([sourceMapping]).join('\n')
+    return [content]
+      .concat(sourceUrls)
+      .concat([sourceMapping])
+      .join('\n')
   }
 
   return [content].join('\n')
 }
 
-const toComment = (sourceMap) => {
+const toComment = sourceMap => {
   const base64 = btoa(unescape(encodeURIComponent(JSON.stringify(sourceMap))))
   const data = `sourceMappingURL=data:application/json;charset=utf-8;base64,${base64}`
 
   return `/*# ${data} */`
 }
 
-const composeTheme = (target, mixin) => {
+const combineFunctions = (fn1, fn2) => () => {
+  const res1 = fn1()
+  const res2 = fn2()
+
+  return typeof res1 === 'string' && typeof res2 === 'string'
+    ? `${res1}${res2}`
+    : undefined
+}
+
+const composeThemes = (target, mixin) => {
   if (!mixin) return target
 
   return Object.keys(mixin).reduce((acc, key) => {
@@ -49,30 +63,39 @@ const composeTheme = (target, mixin) => {
         break
       case 'string':
         if (typeof mixin[key] === 'string') {
-          acc[key] = [target[key], mixin[key]].filter(x => x).join(' ')
+          if (target[key] === mixin[key]) {
+            acc[key] = mixin[key]
+          } else {
+            acc[key] = [target[key], mixin[key]].filter(x => x).join(' ')
+          }
         }
         break
       case 'object':
         if (typeof mixin[key] === 'object') {
-          composeTheme(acc[key], mixin[key])
+          composeThemes(acc[key], mixin[key])
+        }
+        break
+      case 'function':
+        if (typeof mixin[key] === 'function') {
+          acc[key] = combineFunctions(acc[key], mixin[key])
         }
         break
       default:
+      // no default
     }
-
     return acc
   }, target)
 }
 
-function compileCssObject( useSourceMap ) {
+function compileCssObject(useSourceMap) {
   let cssObject = {}
 
   for (let i = 0; i < this.length; ++i) {
     const content = mapCssToSource(this[i], useSourceMap)
 
-    if ( this[i][2] ) {
+    if (this[i][2]) {
       cssObject = {
-        mediaQuery: `@media ${ this[i][2] } { ${ content } }`,
+        mediaQuery: `@media ${this[i][2]} { ${content} }`,
         content: content
       }
     }
@@ -83,55 +106,67 @@ function compileCssObject( useSourceMap ) {
   return cssObject
 }
 
-function compose( theme, target ) {
-
-  if (theme.locals) {
+function compose(theme, target) {
+  if (theme && theme.locals) {
     const locals: Object = theme.locals
     const css = compileCssObject.call(theme, false)
 
     if (css.content) {
       const tokenizedCssArray = tokenizer.tree(css.content)
-      const cssRulesSelectorsObject = cssRulesGenerate( tokenizedCssArray )
-
-      console.log(cssRulesSelectorsObject)
+      const cssRulesSelectorsObject = cssRulesGenerate(tokenizedCssArray)
 
       return Object.keys(locals).reduce((acc, curr) => {
         const localName = locals[curr]
         const match = new RegExp(localName)
-        const css = Object.keys(cssRulesSelectorsObject).reduce(( acc, cssSelector ) => {
-          let css = cssRulesSelectorsObject[cssSelector].css ?
-            cssRulesSelectorsObject[cssSelector].css : false
-          let mediaQuery = cssRulesSelectorsObject[cssSelector].mediaQuery ?
-            cssRulesSelectorsObject[cssSelector].mediaQuery : false
+        const css = Object.keys(cssRulesSelectorsObject).reduce(
+          (acc, cssSelector) => {
+            let css = cssRulesSelectorsObject[cssSelector].css
+              ? cssRulesSelectorsObject[cssSelector].css
+              : false
+            let mediaQuery = cssRulesSelectorsObject[cssSelector].mediaQuery
+              ? cssRulesSelectorsObject[cssSelector].mediaQuery
+              : false
 
-          if (match.test(cssSelector)) {
-            if (css && mediaQuery) {
-              acc.css = acc.css ? acc.css += acc.css : acc.css = acc.css = css
+            if (match.test(cssSelector)) {
+              if (css && mediaQuery) {
+                acc.css = acc.css ? (acc.css += css) : (acc.css = css)
+                acc.mediaQuery = acc.mediaQuery
+                  ? (acc.mediaQuery += mediaQuery)
+                  : (acc.mediaQuery = mediaQuery)
+              } else if (css && !mediaQuery) {
+                acc.css = acc.css ? (acc.css += css) : (acc.css = css)
+              } else if (!css && mediaQuery) {
+                acc.mediaQuery = acc.mediaQuery
+                  ? (acc.mediaQuery += mediaQuery)
+                  : (acc.mediaQuery = mediaQuery)
+              }
             }
-          }
 
-          return acc
-        }, {})
+            return acc
+          },
+          {}
+        )
 
         const styleObject = {
-          [curr]: {
+          [localName]: {
             css: css,
             local: localName
           }
         }
 
-        const themeObject = {
-          [curr]: localName
-        }
-
         if (!acc.theme) {
-          acc.theme = themeObject
-        } else if (acc.theme[curr]) {
-          acc.theme[curr] = [acc.theme[curr], target.theme[curr]].filter(x => x).join(" ")
-        } else {
           acc.theme = {
-            ...acc.theme,
-            ...themeObject
+            ...locals
+          }
+        } else {
+          if (acc.theme[curr]) {
+            if (acc.theme[curr] === localName) {
+              return acc
+            } else {
+              acc.theme[curr] = [target.theme[curr], localName].join(' ')
+            }
+          } else if (!acc.theme[curr]) {
+            acc.theme[curr] = localName
           }
         }
 
@@ -147,54 +182,88 @@ function compose( theme, target ) {
         return acc
       }, target)
     }
+  } else {
+    return composeThemes(target, theme)
   }
-
-  return composeTheme(theme, target)
 }
 
-function cssRulesGenerate( cssTokenizedArray ) {
+function cssRulesGenerate(cssTokenizedArray) {
   const selectorSeparator = ',',
-        ruleSeparator = ':',
-        space = ' '
+    ruleSeparator = ':',
+    space = ' '
 
   let currentSelector = false,
-      currentMediaSelector = false,
-      output = {
-        other: ''
-      },
-      options = { minify: true }
+    currentMediaSelector = false,
+    output = {
+      other: '',
+      mediaQueries: []
+    },
+    options = { minify: true }
 
   cssTokenizedArray.forEach(token => {
+    const hasChildren = token.children ? true : false
+
     switch (token.token) {
       case '{':
-        if (token.selectors !== void 0) {
+        //
+        // @NOTE: If it's just a normal selector, add its children if it has any
+        //
+        if (token.selectors !== void 0 && hasChildren) {
           currentSelector = token.code
 
           if (!output[currentSelector]) {
             output[currentSelector] = {
-              css: `${ currentSelector } { ${ simpleTokenizer.build(token.children, options) } }`
-            }
-          } else {
-            output[currentSelector] = {
               ...output[currentSelector],
-              css: `${ simpleTokenizer.build(token.children, options) }`
+              css: `${currentSelector} { ${simpleTokenizer.build(
+                token.children,
+                options
+              )} }`
             }
           }
-
         } else if (token.atRule !== void 0) {
-
-          if (token.atRule === 'media') {
+          //
+          // @NOTE: if it's a media selector, add it to mediaQuery object
+          //
+          if (token.atRule === 'media' && hasChildren) {
             currentMediaSelector = token.code
 
-            if (output[currentSelector] && !output[currentSelector].mediaQuery && token.children) {
-              output[currentSelector].mediaQuery = `${ currentMediaSelector } { ${ simpleTokenizer.build(token.children, options) } }`
-            } else if (!output[currentSelector]) {
+            if (
+              output.mediaQueries &&
+              output.mediaQueries.includes(currentMediaSelector)
+            ) {
+              output.mediaQueries.push(currentMediaSelector)
+            }
+
+            if (
+              currentSelector &&
+              output[currentSelector] &&
+              !output[currentSelector].mediaQuery
+            ) {
+              output[
+                currentSelector
+              ].mediaQuery = `${currentMediaSelector} { ${simpleTokenizer.build(
+                token.children,
+                options
+              )} }`
+            } else if (currentSelector && !output[currentSelector]) {
+              //
+              // TODO: Add selector details for just MediaQuery
+              //
+              let selectorDetails = simpleTokenizer.build(
+                token.children,
+                options
+              )
               output = {
-                other: output.other += `${ currentMediaSelector } { ${ simpleTokenizer.build(token.children, options) } }`
+                other: (output.other += `${currentMediaSelector} { ${simpleTokenizer.build(
+                  token.children,
+                  options
+                )} }`)
               }
             }
           }
         }
+      break
+      default:
     }
   })
 
@@ -202,19 +271,24 @@ function cssRulesGenerate( cssTokenizedArray ) {
 }
 
 export default (target: Object = {}, ...themes: Array<CssLoaderT>) => {
-
-  if ( isServer() ) {
+  if (isServer()) {
     return themes.reduce((acc, curr) => {
       if (!acc) {
-        acc = compose(curr, target)
+        acc = compose(
+          curr,
+          target
+        )
       }
 
       return {
         ...acc,
-        ...compose(curr, target)
+        ...compose(
+          curr,
+          target
+        )
       }
     }, target)
   } else {
-    return themes.reduce((acc, curr) => composeTheme(target, curr), target)
+    return themes.reduce((acc, curr) => composeThemes(target, curr), target)
   }
 }

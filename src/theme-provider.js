@@ -18,6 +18,8 @@ export default function ThemeProvider( context, GlobalContext ) {
       const { children } = this.props
       let { theme } = this.props
 
+      console.log(theme)
+
       theme = theme.theme ? theme.theme : theme
 
       return (
