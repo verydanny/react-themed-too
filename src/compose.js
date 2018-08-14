@@ -90,8 +90,10 @@ function compose( theme, target ) {
     const css = compileCssObject.call(theme, false)
 
     if (css.content) {
-      const tokenizedCssArray = tokenizer.tokenize(css.content)
+      const tokenizedCssArray = tokenizer.tree(css.content)
       const cssRulesSelectorsObject = cssRulesGenerate( tokenizedCssArray )
+
+      console.log(cssRulesSelectorsObject)
 
       return Object.keys(locals).reduce((acc, curr) => {
         const localName = locals[curr]
@@ -144,25 +146,47 @@ function compose( theme, target ) {
 }
 
 function cssRulesGenerate( cssTokenizedArray ) {
-  let returnObj = {}
-  let currentSelector
+  const selectorSeparator = ',',
+        ruleSeparator = ':',
+        space = ' '
 
-  console.log(cssTokenizedArray)
+  let currentSelector = false,
+      currentMediaSelector = false,
+      output = {
+        other: ''
+      },
+      options = { minify: true }
 
-  for (let i = 0; i < cssTokenizedArray.length; ++i) {
-    let currentItem = cssTokenizedArray[i]
+  cssTokenizedArray.forEach(token => {
+    switch (token.token) {
+      case '{':
+        if (token.selectors !== void 0) {
+          currentSelector = token.code
 
-    if (currentItem.token === '{' && !currentItem.atRule) {
-      currentSelector = currentItem.code
-      returnObj[currentSelector] = `${ currentItem.code } { `
-    } else if (currentItem.token === 'rule') {
-      returnObj[currentSelector] += `${ currentItem.key }: ${ currentItem.value };`
-    } else if (currentItem.token === '}') {
-      returnObj[currentSelector] += ' }'
+          if (!output[currentSelector]) {
+            output[currentSelector] = {
+              css: `${ currentSelector } { ${ simpleTokenizer.build(token.children, options) } }`
+            }
+          } else {
+            output[currentSelector].css += `${ simpleTokenizer.build(token.children, options) }`
+          }
+
+        } else if (token.atRule !== void 0) {
+
+          if (token.atRule === 'media') {
+            currentMediaSelector = token.code
+
+            if (output[currentSelector] && !output[currentSelector].mediaQuery && token.children) {
+              output[currentSelector].mediaQuery = `${ currentMediaSelector } { ${ simpleTokenizer.build(token.children, options) } }`
+            } else if (!output[currentSelector]) {
+              output.other += simpleTokenizer.build(token.children,options)
+            }
+          }
+        }
     }
-  }
+  })
 
-  return returnObj
+  return output
 }
 
 export default (target: Object = {}, ...themes: Array<CssLoaderT>) => {
