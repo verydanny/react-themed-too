@@ -99,12 +99,19 @@ function compose( theme, target ) {
         const localName = locals[curr]
         const match = new RegExp(localName)
         const css = Object.keys(cssRulesSelectorsObject).reduce(( acc, cssSelector ) => {
+          let css = cssRulesSelectorsObject[cssSelector].css ?
+            cssRulesSelectorsObject[cssSelector].css : false
+          let mediaQuery = cssRulesSelectorsObject[cssSelector].mediaQuery ?
+            cssRulesSelectorsObject[cssSelector].mediaQuery : false
+
           if (match.test(cssSelector)) {
-            acc += cssRulesSelectorsObject[ cssSelector ]
+            if (css && mediaQuery) {
+              acc.css = acc.css ? acc.css += acc.css : acc.css = acc.css = css
+            }
           }
 
           return acc
-        }, '')
+        }, {})
 
         const styleObject = {
           [curr]: {
@@ -141,7 +148,7 @@ function compose( theme, target ) {
       }, target)
     }
   }
-  
+
   return composeTheme(theme, target)
 }
 
@@ -168,7 +175,10 @@ function cssRulesGenerate( cssTokenizedArray ) {
               css: `${ currentSelector } { ${ simpleTokenizer.build(token.children, options) } }`
             }
           } else {
-            output[currentSelector].css += `${ simpleTokenizer.build(token.children, options) }`
+            output[currentSelector] = {
+              ...output[currentSelector],
+              css: `${ simpleTokenizer.build(token.children, options) }`
+            }
           }
 
         } else if (token.atRule !== void 0) {
@@ -179,7 +189,9 @@ function cssRulesGenerate( cssTokenizedArray ) {
             if (output[currentSelector] && !output[currentSelector].mediaQuery && token.children) {
               output[currentSelector].mediaQuery = `${ currentMediaSelector } { ${ simpleTokenizer.build(token.children, options) } }`
             } else if (!output[currentSelector]) {
-              output.other += simpleTokenizer.build(token.children,options)
+              output = {
+                other: output.other += `${ currentMediaSelector } { ${ simpleTokenizer.build(token.children, options) } }`
+              }
             }
           }
         }
@@ -196,7 +208,7 @@ export default (target: Object = {}, ...themes: Array<CssLoaderT>) => {
       if (!acc) {
         acc = compose(curr, target)
       }
-  
+
       return {
         ...acc,
         ...compose(curr, target)
