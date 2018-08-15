@@ -12,5 +12,5 @@ export const {
   ThemeProvider,
   compose,
   globalCss,
-  contextKey
+  webpackIdentity
 } = createThemed( Context, GlobalContext )

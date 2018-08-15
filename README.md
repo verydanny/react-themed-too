@@ -20,7 +20,7 @@ Theme management and injection utilizing only css-loader. SSR.
 
 **Client webpack:**
 ```js
-const { contextKey } = require('react-themed-too')
+const { webpackIdentity } = require('react-themed-too')
 
 module.exports = {
   module: {
@@ -34,7 +34,7 @@ module.exports = {
             options: {
               camelCase: true,
               modules: true,
-              localIdentName: `[name]__${ contextKey }--[hash:base64:5]`,
+              localIdentName: webpackIdentity,
             },
           }
         ],
@@ -46,7 +46,7 @@ module.exports = {
 
 **Server webpack:**
 ```js
-const { contextKey } = require('react-themed-too')
+const { webpackIdentity } = require('react-themed-too')
 
 module.exports = {
   module: {
@@ -60,7 +60,7 @@ module.exports = {
             options: {
               camelCase: true,
               modules: true,
-              localIdentName: `[name]__${ contextKey }--[hash:base64:5]`,
+              localIdentName: webpackIdentity,
             },
           }
         ],

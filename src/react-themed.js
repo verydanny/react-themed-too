@@ -1,7 +1,7 @@
 // @flow
 import * as React from 'react'
 
-import { contextSecret, contextKey } from './const'
+import { contextSecret, contextKey, webpackIdentity } from './const'
 import { isBrowser, isServer } from './utils'
 import themed from './themed'
 import ThemeProvider from './theme-provider'
@@ -52,7 +52,7 @@ function createThemed( context: React.Context<any>, GlobalContext: global ) {
     styles: {},
     inserted: {},
     classCache: {},
-    contextKey,
+    webpackIdentity,
   }
   GlobalContext[ contextSecret ] = reactThemed
 
