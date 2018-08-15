@@ -3,7 +3,7 @@
 Theme management and injection utilizing only css-loader. SSR.
 
 ### Guide
-- [Installation](#Installation)
+- [Installation](#installation)
 
 ### Installation  
 `npm install react-themed-too --save-dev`
