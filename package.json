@@ -1,6 +1,6 @@
 {
   "name": "react-themed-too",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "CSS in React",
   "main": "./lib/index.js",
   "author": "Daniil Veremchuk",
@@ -14,6 +14,12 @@
   "directories": {
     "lib": "./lib"
   },
+  "files": [
+    "lib",
+    ".babelrc",
+    "package.json",
+    "README.md"
+  ],
   "devDependencies": {
     "@babel/cli": "^7.0.0-rc.1",
     "@babel/core": "^7.0.0-rc.1",
