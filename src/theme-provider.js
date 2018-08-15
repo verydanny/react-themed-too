@@ -12,14 +12,12 @@ export default function ThemeProvider( context, GlobalContext ) {
       const { theme } = this.props
 
       if (theme && isServer()) {
-        GlobalContext[ contextSecret ].styles = this.props.theme.styles ? this.props.theme.styles : this.props.theme
+        GlobalContext[ contextSecret ].styles = theme.styles ? theme.styles : theme
 
 
         if (theme.classCache) {
           GlobalContext[ contextSecret ].classCache = theme.classCache
         }
-
-        console.log(GlobalContext[ contextSecret ])
       }
     }
 

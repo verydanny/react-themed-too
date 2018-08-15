@@ -1,6 +1,9 @@
 ## React Themed
 
-Theme management for CSS modules, has support for SSR. Node streaming support coming soon.
+Theme management and injection utilizing only css-loader. SSR.
+
+### Guide
+- [Installation](#Installation)
 
 ### Installation  
 `npm install react-themed-too --save-dev`
@@ -9,84 +12,54 @@ or
 <br/>
 `yarn add react-themed-too -D`
 
-<br/>
-
-### Compose a theme object using your CSS modules
-
-*`composed.js`*
-```javascript
-import { compose } from 'react-themed-too'
-import FooStyles from './fooStyles.css'
-import BarStyles from './barStyles.css'
-
-export default compose({},
-  FooStyles,
-  BarStyles
-)
-```
-
-### Provide theme object for `ThemeProvider`
-
-*`App.js`*
+**Client webpack:**
 ```js
-import React from 'react'
-import { render } from 'react-dom'
-import { ThemeProvider } from 'react-themed-too'
-import composed from './composed'
-import App from './App'
+const { contextKey } = require('react-themed-too')
 
-render(
-  <ThemeProvider theme={ composed }>
-    <App/>
-  </ThemeProvider>,
-  document.getElementById('root')
-)
-```
-
-### Use theme in components
-
-*`Button.js`*
-```js
-import * as React from 'react'
-import { themed } from 'react-themed-too'
-
-const Button = ({ theme, ...props }) => (
-  <button className={ theme.fooButton } {...props}>
-    Button Text
-  </button>
-)
-
-export default themed()(Button)
-```
-
-or
-
-```js
-import * as React from 'react'
-import { themed } from 'react-themed-too'
-
-@themed()
-export default class Button extends React.Component {
-  constructor( props ) {
-    super( props )
-
-  }
-  render() {
-    const { theme } = this.props
-
-    return (
-      <button className={ theme.fooButton }>
-        Button Text
-      </button>
-    )
+module.exports = {
+  module: {
+    rules: [
+      {
+        test: /\.css$/,
+        exclude: /node_modules/,
+        use: [
+          {
+            loader: 'css-loader/locals',
+            options: {
+              camelCase: true,
+              modules: true,
+              localIdentName: `[name]__${ contextKey }--[hash:base64:5]`,
+            },
+          }
+        ],
+      }
+    ]
   }
 }
 ```
 
-### SSR Extraction
-react-themed provides a handy function for flushing out the css SSR
+**Server webpack:**
 ```js
-import { flush } from 'react-themed-too'
+const { contextKey } = require('react-themed-too')
 
-const css = flush()
+module.exports = {
+  module: {
+    rules: [
+      {
+        test: /\.css$/,
+        exclude: /node_modules/,
+        use: [
+          {
+            loader: 'css-loader',
+            options: {
+              camelCase: true,
+              modules: true,
+              localIdentName: `[name]__${ contextKey }--[hash:base64:5]`,
+            },
+          }
+        ],
+      }
+    ]
+  }
+}
 ```

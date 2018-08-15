@@ -11,5 +11,6 @@ export const {
   themed,
   ThemeProvider,
   compose,
-  css
+  globalCss,
+  contextKey
 } = createThemed( Context, GlobalContext )

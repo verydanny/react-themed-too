@@ -1,5 +1,3 @@
-export function isServer() {
-  return ! (typeof window != 'undefined' && window.document)
-}
+export const isServer = typeof module !== 'undefined' && module.exports
 
 export const isBrowser = typeof document !== 'undefined'
