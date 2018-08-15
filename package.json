@@ -11,14 +11,14 @@
     "build": "yarn babel ./src -out-dir ./lib"
   },
   "devDependencies": {
-    "@babel/cli": "^7.0.0-beta.56",
-    "@babel/core": "^7.0.0-beta.56",
-    "@babel/plugin-proposal-class-properties": "^7.0.0-beta.56",
-    "@babel/plugin-proposal-decorators": "^7.0.0-beta.56",
-    "@babel/plugin-proposal-object-rest-spread": "^7.0.0-beta.56",
-    "@babel/plugin-transform-modules-commonjs": "^7.0.0-beta.56",
-    "@babel/preset-flow": "^7.0.0-beta.56",
-    "@babel/preset-react": "^7.0.0-beta.56",
+    "@babel/cli": "^7.0.0-rc.1",
+    "@babel/core": "^7.0.0-rc.1",
+    "@babel/plugin-proposal-class-properties": "^7.0.0-rc.1",
+    "@babel/plugin-proposal-decorators": "^7.0.0-rc.1",
+    "@babel/plugin-proposal-object-rest-spread": "^7.0.0-rc.1",
+    "@babel/plugin-transform-modules-commonjs": "^7.0.0-rc.1",
+    "@babel/preset-flow": "^7.0.0-rc.1",
+    "@babel/preset-react": "^7.0.0-rc.1",
     "flow-bin": "^0.78.0"
   },
   "dependencies": {
