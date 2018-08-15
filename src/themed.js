@@ -1,6 +1,5 @@
 // @flow
 import * as React from 'react'
-import hoist from 'hoist-non-react-statics'
 import type { CssLoaderT } from './compose'
 
 import compose from './compose'
@@ -30,10 +29,32 @@ const match = (theme, regex) => (
 const create = (Component, config) => {
   const { context, compose } = config
 
-  return () => (
+  const buildTheme = ( reactThemeContext ) => {
+    const themes = config.themes.slice()
+    const shared = reactThemeContext
+    let thisTheme = undefined;
+
+    themes.forEach(theme => {
+      if (Array.isArray(theme)) {
+        thisTheme = compose(thisTheme, pluck(shared, theme))
+      } else if (typeof theme === 'string') {
+        thisTheme = compose(thisTheme, theme === '*' ? shared : shared[theme])
+      } else if (theme instanceof RegExp) {
+        thisTheme = compose(thisTheme, match(shared, theme))
+      } else if (typeof theme === 'object') {
+        thisTheme = compose(thisTheme, theme)
+      }
+    })
+
+    return thisTheme
+  }
+
+  return ({ ...props }) => (
     <context.Consumer>
       {(theme: CssLoaderT ) => {
-        return <Component theme={theme} />
+        const thisTheme = buildTheme(theme)
+
+        return <Component theme={ thisTheme } {...props}/>
       }}
     </context.Consumer>
   )

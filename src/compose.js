@@ -315,7 +315,7 @@ function cssRulesGenerate(cssTokenizedArray) {
 }
 
 export default (target: Object = {}, ...themes: Array<CssLoaderT>) => {
-  if (isServer()) {
+  if (isServer) {
     return themes.reduce((acc, curr) => {
       if (!acc) {
         acc = compose(

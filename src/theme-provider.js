@@ -12,7 +12,7 @@ export default function ThemeProvider( context: React.Context<any>, GlobalContex
 
       const { theme } = this.props
 
-      if (theme && isServer()) {
+      if (theme && isServer) {
         GlobalContext[ contextSecret ].styles = theme.styles ? theme.styles : theme
 
 
