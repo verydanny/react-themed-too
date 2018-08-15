@@ -1,12 +1,12 @@
-## React Themed
+# react-themed-too
 
 Theme management and injection utilizing only css-loader. SSR.
 
-### Guide
+## Documentation
 - [Installation](#installation)
 - [Composition](#compose)
 
-### Features:
+## Features:
 - 🌏 SSR
 - ✨ Supports SCSS/SASS out of the box
 - 😣 No weird "css-in-js" API
@@ -14,7 +14,10 @@ Theme management and injection utilizing only css-loader. SSR.
 - 👌 CSS extraction of critical CSS
 - 📺 Node streaming support
 
-### Installation  
+
+---
+
+## Installation  
 **NPM:** `npm install react-themed-too --save-dev`  
 **Yarn:** `yarn add react-themed-too -D`
 
@@ -70,7 +73,7 @@ module.exports = {
 }
 ```
 
-### Compose
+## Compose
 
 **Compose a theme:**
 ```js
@@ -140,11 +143,11 @@ export default class Footer extends React.PureComponent {
 }
 ```
 
-### API
+## API
 
 Coming Soon
 
-### ToDo
+## ToDo
 
 - [ ] Add optional client side support
 - [ ] Better CSS sorting
