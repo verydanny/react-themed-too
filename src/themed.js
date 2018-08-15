@@ -8,7 +8,7 @@ import compose from './compose'
 const whatReactComponent = (component) => {
   if (typeof component !== 'string' && component.prototype && component.prototype.render) {
     return "class"
-  } 
+  }
 
   return "stateless"
 }
@@ -28,38 +28,13 @@ const match = (theme, regex) => (
 )
 
 const create = (Component, config) => {
-  const BaseComponent = whatReactComponent(Component) === "stateless" ? React.PureComponent
-    : config.pure ? React.PureComponent : React.Component
-
   const { context, compose } = config
-  const themes = config.themes.slice()
-  let thisTheme
 
-  const buildContext = ( reactThemed ) => {
-    const shared = reactThemed.locals ? reactThemed.locals : {}
-
-    // themes.forEach(theme => {
-    //   if (Array.isArray(theme)) {
-    //     thisTheme = compose(thisTheme, pluck(shared, theme))
-    //   } else if (typeof theme === 'string') {
-    //     thisTheme = compose(thisTheme, theme === '*' ? shared : shared[theme])
-    //   } else if (theme instanceof RegExp) {
-    //     thisTheme = compose(thisTheme, match(shared, theme))
-    //   } else if (typeof theme === 'object') {
-    //     thisTheme = compose(thisTheme, theme)
-    //   }
-    // })
-
-    return <Component theme={ thisTheme }/>
-  }
-  
-  // update the ThemeProvider with new object, then
-  // Do the thang
   return () => (
     <context.Consumer>
-      { (theme: CssLoaderT ) => {
-        return <Component theme={ theme }/>}
-      }
+      {(theme: CssLoaderT ) => {
+        return <Component theme={theme} />
+      }}
     </context.Consumer>
   )
 }

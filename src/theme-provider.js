@@ -9,16 +9,22 @@ export default function ThemeProvider( context, GlobalContext ) {
     constructor(props) {
       super(props)
 
-      if (this.props.theme && isServer()) {
+      const { theme } = this.props
+
+      if (theme && isServer()) {
         GlobalContext[ contextSecret ].styles = this.props.theme.styles ? this.props.theme.styles : this.props.theme
+        GlobalContext[ contextSecret ].inserted = {}
+
+
+        if (theme.classCache) {
+          GlobalContext[ contextSecret ].classCache = theme.classCache
+        }
       }
     }
 
     render() {
       const { children } = this.props
       let { theme } = this.props
-
-      console.log(theme)
 
       theme = theme.theme ? theme.theme : theme
 

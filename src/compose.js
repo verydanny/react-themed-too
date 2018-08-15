@@ -1,6 +1,7 @@
 // @flow
 import simpleTokenizer from 'simple-tokenizer'
 import { isServer } from './utils'
+import { contextKey } from './const'
 
 const tokenizer = new simpleTokenizer()
 
@@ -106,6 +107,14 @@ function compileCssObject(useSourceMap) {
   return cssObject
 }
 
+function isEmpty(obj) {
+  for(var key in obj) {
+    if(obj.hasOwnProperty(key))
+      return false
+  }
+  return true
+}
+
 function compose(theme, target) {
   if (theme && theme.locals) {
     const locals: Object = theme.locals
@@ -116,41 +125,77 @@ function compose(theme, target) {
       const cssRulesSelectorsObject = cssRulesGenerate(tokenizedCssArray)
 
       return Object.keys(locals).reduce((acc, curr) => {
+        acc.mediaQueries = {}
         const localName = locals[curr]
         const match = new RegExp(localName)
-        const css = Object.keys(cssRulesSelectorsObject).reduce(
-          (acc, cssSelector) => {
-            let css = cssRulesSelectorsObject[cssSelector].css
+        const matchArr = (cssRulesSelectorsObject.cache && cssRulesSelectorsObject.cache.length > 0)
+          ? cssRulesSelectorsObject.cache.reduce((cssAcc, cssSelector) => {
+            const cssProp = cssRulesSelectorsObject[cssSelector] && cssRulesSelectorsObject[cssSelector].css
               ? cssRulesSelectorsObject[cssSelector].css
               : false
-            let mediaQuery = cssRulesSelectorsObject[cssSelector].mediaQuery
+            const mediaProp = cssRulesSelectorsObject[cssSelector] && cssRulesSelectorsObject[cssSelector].mediaQuery
               ? cssRulesSelectorsObject[cssSelector].mediaQuery
               : false
 
             if (match.test(cssSelector)) {
-              if (css && mediaQuery) {
-                acc.css = acc.css ? (acc.css += css) : (acc.css = css)
-                acc.mediaQuery = acc.mediaQuery
-                  ? (acc.mediaQuery += mediaQuery)
-                  : (acc.mediaQuery = mediaQuery)
-              } else if (css && !mediaQuery) {
-                acc.css = acc.css ? (acc.css += css) : (acc.css = css)
-              } else if (!css && mediaQuery) {
-                acc.mediaQuery = acc.mediaQuery
-                  ? (acc.mediaQuery += mediaQuery)
-                  : (acc.mediaQuery = mediaQuery)
+              if (cssProp && mediaProp) {
+                cssAcc.css = cssAcc.css
+                  ? (cssAcc.css += cssProp)
+                  : (cssAcc.css = cssProp)
+                cssAcc.mediaQuery = cssAcc.mediaQuery
+                  ? (cssAcc.mediaQuery += mediaProp)
+                  : (cssAcc.mediaQuery = mediaProp)
+              } else if (cssProp && !mediaProp) {
+                cssAcc.css = cssAcc.css
+                  ? (cssAcc.css += cssProp)
+                  : (cssAcc.css = cssProp)
+              } else if (!cssProp && mediaProp) {
+                cssAcc.mediaQuery = cssAcc.mediaQuery
+                  ? (cssAcc.mediaQuery += mediaProp)
+                  : (cssAcc.mediaQuery = mediaProp)
               }
             }
 
-            return acc
-          },
-          {}
-        )
+            return cssAcc
+          }, {})
+          : {}
 
-        const styleObject = {
-          [localName]: {
-            css: css,
-            local: localName
+        if (cssRulesSelectorsObject.mediaQueries.length > 0) {
+          cssRulesSelectorsObject.mediaQueries.forEach(query => acc.mediaQueries[query] = true)
+        }
+
+        let styleObject;
+        if (!isEmpty(matchArr)) {
+          const keyReg = new RegExp(`${contextKey}--([a-zA-Z0-9-]+)`,'g')
+          const ids = localName.split(keyReg)
+          const name = localName
+          const id = ids[1]
+
+          if (!acc.classCache) {
+            acc.classCache = {
+              [id]: name
+            }
+          } else {
+            acc.classCache = {
+              ...acc.classCache,
+              [id]: name
+            }
+          }
+
+          styleObject = {
+            [localName]: {
+              type: 'css',
+              css: matchArr,
+              local: curr
+            }
+          }
+        } else {
+          styleObject = {
+            [curr]: {
+              type: 'variable',
+              css: localName,
+              local: false
+            }
           }
         }
 
@@ -161,7 +206,7 @@ function compose(theme, target) {
         } else {
           if (acc.theme[curr]) {
             if (acc.theme[curr] === localName) {
-              return acc
+              acc.theme[curr] = target.theme[curr]
             } else {
               acc.theme[curr] = [target.theme[curr], localName].join(' ')
             }
@@ -170,13 +215,13 @@ function compose(theme, target) {
           }
         }
 
-        if (acc.styles) {
+        if (!acc.styles) {
+          acc.styles = styleObject
+        } else {
           acc.styles = {
             ...acc.styles,
             ...styleObject
           }
-        } else {
-          acc.styles = styleObject
         }
 
         return acc
@@ -196,7 +241,8 @@ function cssRulesGenerate(cssTokenizedArray) {
     currentMediaSelector = false,
     output = {
       other: '',
-      mediaQueries: []
+      mediaQueries: [],
+      cache: []
     },
     options = { minify: true }
 
@@ -210,6 +256,7 @@ function cssRulesGenerate(cssTokenizedArray) {
         //
         if (token.selectors !== void 0 && hasChildren) {
           currentSelector = token.code
+          output.cache.push( currentSelector )
 
           if (!output[currentSelector]) {
             output[currentSelector] = {
@@ -229,7 +276,7 @@ function cssRulesGenerate(cssTokenizedArray) {
 
             if (
               output.mediaQueries &&
-              output.mediaQueries.includes(currentMediaSelector)
+              !output.mediaQueries.includes(currentMediaSelector)
             ) {
               output.mediaQueries.push(currentMediaSelector)
             }
@@ -245,20 +292,17 @@ function cssRulesGenerate(cssTokenizedArray) {
                 token.children,
                 options
               )} }`
-            } else if (currentSelector && !output[currentSelector]) {
-              //
-              // TODO: Add selector details for just MediaQuery
-              //
-              let selectorDetails = simpleTokenizer.build(
-                token.children,
-                options
-              )
-              output = {
-                other: (output.other += `${currentMediaSelector} { ${simpleTokenizer.build(
-                  token.children,
-                  options
-                )} }`)
-              }
+            } else if (!currentSelector && !output[currentSelector]) {
+              token.children.forEach(child => {
+                if (child.token === '{' && child.selectors !== void 0) {
+                  currentSelector = child.code
+                  output.cache.push(!output.cache.includes(child.code) && child.node)
+
+                  output[currentSelector] = {
+                    mediaQuery: `${currentMediaSelector} {${simpleTokenizer.build(child.children,options)}}`
+                  }
+                }
+              })
             }
           }
         }
