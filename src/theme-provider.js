@@ -1,12 +1,13 @@
+// @flow
 import * as React from 'react'
 import { isServer } from './utils'
 import compose from './compose'
 import { contextSecret } from './const'
 
-export default function ThemeProvider( context, GlobalContext ) {
+export default function ThemeProvider( context: React.Context<any>, GlobalContext: global ) {
 
-  return class ThemeProvider extends React.PureComponent {
-    constructor(props) {
+  return class ThemeProvider extends React.PureComponent<any> {
+    constructor(props: any) {
       super(props)
 
       const { theme } = this.props
