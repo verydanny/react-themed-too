@@ -5,7 +5,7 @@ import { contextSecret, contextKey } from './const'
 import { isBrowser } from './utils'
 import themed from './themed'
 import ThemeProvider from './theme-provider'
-import compose from './compose'
+import compose, { compileCssObject } from './compose'
 import renderToStream from './renderToStream'
 import extractCritical from './extractCritical'
 
@@ -29,12 +29,29 @@ function createThemed( context: React.Context<any>, GlobalContext: global ) {
     document.head.appendChild(tag)
   }
 
+  function css( ...cssFile ) {
+    GlobalContext[ contextSecret ].globalCss = cssFile.reduce((acc, curr) => {
+      if (curr.locals) {
+        let css = compileCssObject.call(curr, false)
+
+        acc += css.content
+
+        return acc
+      }
+    }, '')
+  }
+
   const reactThemed = {
     renderToStream: renderToStream( GlobalContext ),
     extractCritical: extractCritical( GlobalContext ),
     themed: themed( context ),
     ThemeProvider: ThemeProvider( context, GlobalContext ),
     compose,
+    css,
+    globalCss: '',
+    styles: {},
+    inserted: {},
+    classCache: {}
   }
   GlobalContext[ contextSecret ] = reactThemed
 

@@ -88,7 +88,7 @@ const composeThemes = (target, mixin) => {
   }, target)
 }
 
-function compileCssObject(useSourceMap) {
+export function compileCssObject(useSourceMap) {
   let cssObject = {}
 
   for (let i = 0; i < this.length; ++i) {

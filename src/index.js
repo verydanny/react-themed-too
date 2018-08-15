@@ -10,5 +10,6 @@ export const {
   extractCritical,
   themed,
   ThemeProvider,
-  compose
+  compose,
+  css
 } = createThemed( Context, GlobalContext )

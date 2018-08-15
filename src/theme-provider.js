@@ -13,12 +13,13 @@ export default function ThemeProvider( context, GlobalContext ) {
 
       if (theme && isServer()) {
         GlobalContext[ contextSecret ].styles = this.props.theme.styles ? this.props.theme.styles : this.props.theme
-        GlobalContext[ contextSecret ].inserted = {}
 
 
         if (theme.classCache) {
           GlobalContext[ contextSecret ].classCache = theme.classCache
         }
+
+        console.log(GlobalContext[ contextSecret ])
       }
     }
 
