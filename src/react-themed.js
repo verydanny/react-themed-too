@@ -29,8 +29,8 @@ function createThemed( context: React.Context<any>, GlobalContext: global ) {
     document.head.appendChild(tag)
   }
 
-  function globalCss( ...cssFile ) {
-    GlobalContext[ contextSecret ].globalCss = cssFile.reduce((acc, curr) => {
+  function addGlobalCss( ...cssFile ) {
+    GlobalContext[ contextSecret ].globalCss += cssFile.reduce((acc, curr) => {
       if (curr.locals && isServer) {
         let css = compileCssObject.call(curr, false)
 
@@ -48,6 +48,7 @@ function createThemed( context: React.Context<any>, GlobalContext: global ) {
     ThemeProvider: ThemeProvider( context, GlobalContext ),
     compose,
     globalCss: '',
+    addGlobalCss,
     styles: {},
     inserted: {},
     classCache: {},
