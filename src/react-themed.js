@@ -47,7 +47,6 @@ function createThemed( context: React.Context<any>, GlobalContext: global ) {
     themed: themed( context ),
     ThemeProvider: ThemeProvider( context, GlobalContext ),
     compose,
-    globalCss,
     globalCss: '',
     styles: {},
     inserted: {},
