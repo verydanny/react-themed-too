@@ -1,14 +1,15 @@
 {
   "name": "react-themed-too",
-  "version": "1.0.0",
+  "version": "0.1.4",
   "description": "CSS in React",
   "main": "./lib/index.js",
   "author": "Daniil Veremchuk",
   "license": "MIT",
   "private": false,
   "scripts": {
+    "publish": "yarn build",
     "start": "yarn babel --watch ./src --out-dir lib",
-    "build": "yarn babel ./src -out-dir ./lib"
+    "build": "yarn babel ./src --out-dir ./lib"
   },
   "devDependencies": {
     "@babel/cli": "^7.0.0-rc.1",
