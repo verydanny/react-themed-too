@@ -15,7 +15,7 @@ Theme management and injection utilizing only css-loader. SSR.
 - 📺 Node streaming support
 
 ### Installation  
-**NPM:** `npm install react-themed-too --save-dev`
+**NPM:** `npm install react-themed-too --save-dev`  
 **Yarn:** `yarn add react-themed-too -D`
 
 **Client webpack:**
