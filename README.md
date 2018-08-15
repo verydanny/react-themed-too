@@ -7,12 +7,12 @@ Theme management and injection utilizing only css-loader. SSR.
 - [Composition](#compose)
 
 ### Features:
-- [x] SSR
-- [x] Supports SCSS/SASS out of the box
-- [x] No weird "css-in-js" API
-- [x] Fast
-- [x] CSS extraction of critical CSS
-- [x] Node streaming support
+- 🌏 SSR
+- ✨ Supports SCSS/SASS out of the box
+- 😣 No weird "css-in-js" API
+- 🏎 Fast
+- 👌 CSS extraction of critical CSS
+- 📺 Node streaming support
 
 ### Installation  
 **NPM:** `npm install react-themed-too --save-dev`
