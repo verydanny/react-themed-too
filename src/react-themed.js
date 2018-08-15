@@ -7,6 +7,7 @@ import themed from './themed'
 import ThemeProvider from './theme-provider'
 import compose from './compose'
 import renderToStream from './renderToStream'
+import extractCritical from './extractCritical'
 
 function createThemed( context: React.Context<any>, GlobalContext: global ) {
   if ( GlobalContext[ contextSecret ] !== undefined ) {
@@ -28,12 +29,9 @@ function createThemed( context: React.Context<any>, GlobalContext: global ) {
     document.head.appendChild(tag)
   }
 
-  function flush() {
-
-  }
-
   const reactThemed = {
     renderToStream: renderToStream( GlobalContext ),
+    extractCritical: extractCritical( GlobalContext ),
     themed: themed( context ),
     ThemeProvider: ThemeProvider( context, GlobalContext ),
     compose,

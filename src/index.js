@@ -7,6 +7,7 @@ const GlobalContext = typeof global !== 'undefined' ? global : {}
 
 export const {
   renderToStream,
+  extractCritical,
   themed,
   ThemeProvider,
   compose
