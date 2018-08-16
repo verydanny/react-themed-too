@@ -12,12 +12,18 @@ const whatReactComponent = (component) => {
   return "stateless"
 }
 
-const pluck = (theme, keys) => (
-  keys.reduce((acc, key) => {
-    acc[key] = theme[key]
-    return acc
-  }, {})
-)
+const pluck = (theme, keys) => {
+  if ( theme && keys !== void 0 ) {
+    return keys.reduce((acc, key) => {
+      if (keys !== void 0 && theme[key]) {
+        acc[key] = theme[key]
+      }
+      return acc
+    }, {})
+  }
+
+  return {}
+}
 
 const match = (theme, regex) => (
   Object.keys(theme).reduce((acc, key) => {
@@ -32,7 +38,11 @@ const create = (Component, config) => {
   const buildTheme = ( reactThemeContext ) => {
     const themes = config.themes.slice()
     const shared = reactThemeContext
-    let thisTheme = undefined;
+    let thisTheme = undefined
+
+    if (!shared) {
+      return {}
+    }
 
     themes.forEach(theme => {
       if (Array.isArray(theme)) {
@@ -49,8 +59,8 @@ const create = (Component, config) => {
     return thisTheme
   }
 
-  return ({ ...props }) => (
-    <context.Consumer>
+  return ({...props}) => (
+    <context.Consumer WrappedComponent={ Component }>
       {(theme: CssLoaderT ) => {
         const thisTheme = buildTheme(theme)
 
@@ -79,7 +89,7 @@ const factory = (defaults: FactoryDefaultsT) => {
 
     Object.assign(config, options, {
       themes,
-      context
+      context,
     })
 
     return create(Component, config)
