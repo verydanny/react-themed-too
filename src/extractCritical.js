@@ -1,7 +1,7 @@
 // @flow
 import { contextSecret, contextKey } from './const'
 
-const extractCritical = ( GlobalContext: global ) => (html: String) => {
+const extractCritical = ( GlobalContext: global ) => (html: string) => {
   const { styles, classCache, globalCss } = GlobalContext[ contextSecret ]
   let { inserted } = GlobalContext[ contextSecret ]
   let RGX = new RegExp(`${ contextKey }--([a-zA-Z0-9-]+)`, 'gm')
