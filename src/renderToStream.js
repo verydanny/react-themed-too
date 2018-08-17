@@ -8,11 +8,20 @@ const createRenderToStream = (
   GlobalContext
 ) => () => {
   const tokenStream = tokenize()
+  let globalInjected = false
 
   const inlineStream = through(
     function write(thing) {
       let [type, data] = thing
-      const { styles, classCache, inserted } = GlobalContext[ contextSecret ]
+      const { styles, classCache, inserted, globalCss } = GlobalContext[ contextSecret ]
+
+      if (globalCss !== '') {
+        this.queue(
+          `<style data-${contextKey}="globalCss">
+            ${ globalCss }
+          </style>`
+        )
+      }
 
       if (type === 'open') {
         let css = ''
@@ -48,10 +57,6 @@ const createRenderToStream = (
             </style>`
           )
         }
-      }
-
-      if (type === 'close') {
-        let fragment = data.toString()
       }
 
       this.queue(data)

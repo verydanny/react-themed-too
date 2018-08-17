@@ -42,8 +42,6 @@ function createThemed( context: React.Context<any>, GlobalContext: global ) {
   }
 
   const reactThemed = {
-    renderToStream: renderToStream( GlobalContext ),
-    extractCritical: extractCritical( GlobalContext ),
     themed: themed( context ),
     ThemeProvider: ThemeProvider( context, GlobalContext ),
     compose,
