@@ -2,12 +2,16 @@
 import { contextSecret, contextKey } from './const'
 
 const extractCritical = ( GlobalContext: global ) => (html: String) => {
-  const { styles, classCache } = GlobalContext[ contextSecret ]
+  const { styles, classCache, globalCss } = GlobalContext[ contextSecret ]
   let { inserted } = GlobalContext[ contextSecret ]
   let RGX = new RegExp(`${ contextKey }--([a-zA-Z0-9-]+)`, 'gm')
   let o = { html, css: '' }
   let match
   let ids = {}
+
+  if ( globalCss !== '' ) {
+    o.css += globalCss
+  }
 
   while ((match = RGX.exec(html)) !== null) {
     if (ids[match[1]] === undefined) {
