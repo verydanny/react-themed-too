@@ -8,19 +8,21 @@ const createRenderToStream = (
   GlobalContext
 ) => () => {
   const tokenStream = tokenize()
-  let globalInjected = false
+  let globalCssInjected = false
 
   const inlineStream = through(
     function write(thing) {
       let [type, data] = thing
       const { styles, classCache, inserted, globalCss } = GlobalContext[ contextSecret ]
 
-      if (globalCss !== '') {
+      if (globalCss !== '' && !globalCssInjected) {
         this.queue(
           `<style data-${contextKey}="globalCss">
             ${ globalCss }
           </style>`
         )
+
+        globalCssInjected = true
       }
 
       if (type === 'open') {

@@ -31,10 +31,8 @@
     "@babel/preset-react": "^7.0.0-rc.1",
     "flow-bin": "^0.78.0"
   },
-  "peerDependencies": {
-    "react": "^16.4.2"
-  },
   "dependencies": {
+    "react": "^16.4.2",
     "html-tokenize": "^2.0.0",
     "multipipe": "^2.0.3",
     "simple-tokenizer": "^1.0.2",
