@@ -22,14 +22,14 @@ const extractCritical = ( GlobalContext: global ) => (html: string) => {
   Object.keys(ids).filter(id => {
     if ( ids[id] && typeof inserted[id] === 'undefined' && classCache[id] ) {
       inserted[id] = true
-      let currentID = classCache[id]
+      const currentID = classCache[id]
 
       if ( styles[currentID] ) {
-        let currentCss = styles[currentID].css && styles[currentID].css.css
+        const currentCss = styles[currentID].css && styles[currentID].css.css
           ? styles[currentID].css.css
           : false
 
-        let currentMediaQuery = styles[currentID].css && styles[currentID].css.mediaQuery
+        const currentMediaQuery = styles[currentID].css && styles[currentID].css.mediaQuery
           ? styles[currentID].css.mediaQuery
           : false
 

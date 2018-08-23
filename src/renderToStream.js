@@ -42,7 +42,7 @@ const createRenderToStream = (
 
         Object.keys(ids).forEach(id => {
           let currentID = classCache[id]
-          console.log(classCache)
+
           if ( styles[currentID] && typeof inserted[id] === 'undefined' && ids[id] === true ) {
             inserted[id] = true
             let styleCss = styles[currentID] && styles[currentID].css && styles[currentID].css.css ? styles[currentID].css.css : false
