@@ -5,12 +5,15 @@ const extractCritical = ( GlobalContext: global ) => (html: string) => {
   const { styles, classCache, globalCss } = GlobalContext[ contextSecret ]
   let { inserted } = GlobalContext[ contextSecret ]
   let RGX = new RegExp(`${ contextKey }--([a-zA-Z0-9-]+)`, 'gm')
-  let o = { html, css: '' }
+  let o = { html, css: {
+    output: '',
+    mediaQueries: ''
+  }}
   let match
   let ids = {}
 
   if ( globalCss !== '' ) {
-    o.css += globalCss
+    o.css.output += globalCss
   }
 
   while ((match = RGX.exec(html)) !== null) {
@@ -34,9 +37,15 @@ const extractCritical = ( GlobalContext: global ) => (html: string) => {
           : false
 
         if ( currentCss ) {
-          o.css += currentCss
+          o.css.output += currentCss
+
+          if ( currentMediaQuery ) {
+            o.css.mediaQueries += currentMediaQuery
+          }
 
           return true
+        } else if ( currentMediaQuery ) {
+          o.css.mediaQueries += currentMediaQuery
         }
       }
     } else {
