@@ -250,10 +250,10 @@ done client side immediately.
 
 ```js
 import { renderToNodeStream } from 'react-dom/server'
-import { renderStylesToNodeStream } from 'emotion-server'
+import { renderToStream } from 'react-themed-too'
 import App from './App'
 
-const stream = renderToNodeStream(<App />).pipe(renderToStream())
+const stream = renderToStream(<App />).pipe(renderToStream())
 ```
 
 ## ToDo
