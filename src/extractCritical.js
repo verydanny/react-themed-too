@@ -22,10 +22,6 @@ const extractCritical = ( GlobalContext: global ) => (html: string) => {
     }
   }
 
-  // 1. create hash on extractCritical
-  // 2. if hash exists, serve cache
-  // 3. otherwise extract
-
   Object.keys(ids).filter(id => {
     if ( ids[id] && typeof inserted[id] === 'undefined' && classCache[id] ) {
       inserted[id] = true

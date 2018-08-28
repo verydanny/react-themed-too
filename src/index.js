@@ -11,7 +11,6 @@ const extractCritical = extractCss( GlobalContext )
 const renderToStream = nodeStream( GlobalContext )
 
 export const {
-  insertedCache,
   themed,
   ThemeProvider,
   compose,

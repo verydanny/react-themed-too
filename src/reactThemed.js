@@ -6,8 +6,6 @@ import { isBrowser, isServer } from './utils'
 import themed from './themed'
 import ThemeProvider from './themeProvider'
 import compose, { compileCssObject } from './compose'
-import renderToStream from './renderToStream'
-import extractCritical from './extractCritical'
 
 function createThemed( context: React.Context<any>, GlobalContext: global ) {
   if ( GlobalContext[ contextSecret ] !== undefined ) {
