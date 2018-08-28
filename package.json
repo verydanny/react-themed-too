@@ -1,6 +1,6 @@
 {
   "name": "react-themed-too",
-  "version": "0.1.9",
+  "version": "0.2.0",
   "description": "CSS in React",
   "main": "./lib/index.js",
   "author": "Daniil Veremchuk",
