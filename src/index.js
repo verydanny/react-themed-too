@@ -1,8 +1,7 @@
 // @flow
 import * as React from 'react'
 
-import { contextSecret } from './const'
-import createThemed from './react-themed'
+import createThemed from './reactThemed'
 import { default as extractCss } from './extractCritical'
 import { default as nodeStream } from './renderToStream'
 
@@ -12,6 +11,7 @@ const extractCritical = extractCss( GlobalContext )
 const renderToStream = nodeStream( GlobalContext )
 
 export const {
+  insertedCache,
   themed,
   ThemeProvider,
   compose,

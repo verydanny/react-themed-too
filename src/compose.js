@@ -132,15 +132,14 @@ function compose(theme, target) {
           cssRulesSelectorsObject.cache &&
           cssRulesSelectorsObject.cache.length > 0
             ? cssRulesSelectorsObject.cache.reduce((cssAcc, cssSelector) => {
-                const cssProp =
-                  cssRulesSelectorsObject[cssSelector] &&
-                  cssRulesSelectorsObject[cssSelector].css
-                    ? cssRulesSelectorsObject[cssSelector].css
-                    : false
-                const mediaProp =
-                  cssRulesSelectorsObject[cssSelector] &&
-                  cssRulesSelectorsObject[cssSelector].mediaQuery
-                    ? cssRulesSelectorsObject[cssSelector].mediaQuery
+                const cssRule = cssRulesSelectorsObject[cssSelector]
+
+                const cssProp = cssRule && cssRule.css
+                  ? cssRule.css
+                  : false
+
+                const mediaProp = cssRule && cssRule.mediaQuery
+                    ? cssRule.mediaQuery
                     : false
 
                 if (match.test(cssSelector)) {
