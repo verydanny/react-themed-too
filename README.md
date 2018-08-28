@@ -188,7 +188,8 @@ addGlobalCss(
 ```
 
 ### `extractCritical(HTMLstring): Object`
-Returns an object with properties `html` and `css`. Removes unused rules, but includes `addGlobalCss` rules.
+Returns an object with properties `html` and `body`. `body` contains properties `css: (String)` and `mediaQueries: (String)` so one can configure the order.
+Removes unused rules, but includes `addGlobalCss` rules.
 
 #### Parameters
 
@@ -213,6 +214,46 @@ const html = renderToString(
 )
 
 res.send(html)
+```
+
+### `extractCss(): Object`
+Returns an object with properties `globalCss` and `body` which contains `css: (String)` and `mediaQueries: (String)`.
+
+#### Example
+
+```js
+import { extractCritical } from 'react-themed-too'
+import { renderToString } from 'react-dom/server'
+
+const css = extractCss()
+
+const html = renderToString(
+  <HTML
+    state={store}
+    scripts={assets}
+    globalCss={css.globalCss}
+    css={css.body.css}
+    mediaQueries={css.body.mediaQueries}
+  >
+    { children }
+  </HTML>
+)
+
+res.send(html)
+```
+
+### `renderToStream()` (WIP, use with caution)
+Returns a Node Stream Writable that can be used to insert critical css before it's required. Hydration is
+done client side immediately.
+
+#### Example
+
+```js
+import { renderToNodeStream } from 'react-dom/server'
+import { renderStylesToNodeStream } from 'emotion-server'
+import App from './App'
+
+const stream = renderToNodeStream(<App />).pipe(renderToStream())
 ```
 
 ## ToDo

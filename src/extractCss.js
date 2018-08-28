@@ -28,7 +28,7 @@ const extractCss = ( GlobalContext ) => {
 
   return {
     globalCss: globalCss,
-    css: target
+    body: target
   }
 }
 
