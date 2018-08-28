@@ -1,7 +1,7 @@
 // @flow
-import simpleTokenizer from 'simple-tokenizer'
-import { isServer } from './utils'
-import { contextKey } from './const'
+import simpleTokenizer from "simple-tokenizer"
+import { isServer } from "./utils"
+import { contextKey } from "./const"
 
 const tokenizer = new simpleTokenizer()
 
@@ -14,14 +14,14 @@ export type CssLoaderT = {
 }
 
 const mapCssToSource = (item, useSourceMap) => {
-  const content = item[1] || ''
+  const content = item[1] || ""
   const cssMap = item[3]
 
   if (!cssMap) {
     return content
   }
 
-  if (useSourceMap && typeof btoa === 'function') {
+  if (useSourceMap && typeof btoa === "function") {
     const sourceMapping = toComment(cssMap)
     const sourceUrls = cssMap.sources.map(
       source => `/*# sourceURL=${cssMap.sourceRoot + source}*/`
@@ -30,10 +30,10 @@ const mapCssToSource = (item, useSourceMap) => {
     return [content]
       .concat(sourceUrls)
       .concat([sourceMapping])
-      .join('\n')
+      .join("\n")
   }
 
-  return [content].join('\n')
+  return [content].join("\n")
 }
 
 const toComment = sourceMap => {
@@ -47,7 +47,7 @@ const combineFunctions = (fn1, fn2) => () => {
   const res1 = fn1()
   const res2 = fn2()
 
-  return typeof res1 === 'string' && typeof res2 === 'string'
+  return typeof res1 === "string" && typeof res2 === "string"
     ? `${res1}${res2}`
     : undefined
 }
@@ -57,27 +57,27 @@ const composeThemes = (target, mixin) => {
 
   return Object.keys(mixin).reduce((acc, key) => {
     switch (typeof acc[key]) {
-      case 'undefined':
+      case "undefined":
         if (mixin[key] !== null) {
           acc[key] = mixin[key]
         }
         break
-      case 'string':
-        if (typeof mixin[key] === 'string') {
+      case "string":
+        if (typeof mixin[key] === "string") {
           if (target[key] === mixin[key]) {
             acc[key] = mixin[key]
           } else {
-            acc[key] = [target[key], mixin[key]].filter(x => x).join(' ')
+            acc[key] = [target[key], mixin[key]].filter(x => x).join(" ")
           }
         }
         break
-      case 'object':
-        if (typeof mixin[key] === 'object') {
+      case "object":
+        if (typeof mixin[key] === "object") {
           composeThemes(acc[key], mixin[key])
         }
         break
-      case 'function':
-        if (typeof mixin[key] === 'function') {
+      case "function":
+        if (typeof mixin[key] === "function") {
           acc[key] = combineFunctions(acc[key], mixin[key])
         }
         break
@@ -108,15 +108,14 @@ export function compileCssObject(useSourceMap) {
 }
 
 function isEmpty(obj) {
-  for(var key in obj) {
-    if(obj.hasOwnProperty(key))
-      return false
+  for (var key in obj) {
+    if (obj.hasOwnProperty(key)) return false
   }
   return true
 }
 
 function compose(theme, target) {
-  if (theme && theme.locals) {
+  if (theme.locals) {
     const locals: Object = theme.locals
     const css = compileCssObject.call(theme, false)
 
@@ -128,45 +127,58 @@ function compose(theme, target) {
         acc.mediaQueries = {}
         const localName = locals[curr]
         const match = new RegExp(localName)
-        const matchArr = (cssRulesSelectorsObject.cache && cssRulesSelectorsObject.cache.length > 0)
-          ? cssRulesSelectorsObject.cache.reduce((cssAcc, cssSelector) => {
-            const cssProp = cssRulesSelectorsObject[cssSelector] && cssRulesSelectorsObject[cssSelector].css
-              ? cssRulesSelectorsObject[cssSelector].css
-              : false
-            const mediaProp = cssRulesSelectorsObject[cssSelector] && cssRulesSelectorsObject[cssSelector].mediaQuery
-              ? cssRulesSelectorsObject[cssSelector].mediaQuery
-              : false
 
-            if (match.test(cssSelector)) {
-              if (cssProp && mediaProp) {
-                cssAcc.css = cssAcc.css
-                  ? (cssAcc.css += cssProp)
-                  : (cssAcc.css = cssProp)
-                cssAcc.mediaQuery = cssAcc.mediaQuery
-                  ? (cssAcc.mediaQuery += mediaProp)
-                  : (cssAcc.mediaQuery = mediaProp)
-              } else if (cssProp && !mediaProp) {
-                cssAcc.css = cssAcc.css
-                  ? (cssAcc.css += cssProp)
-                  : (cssAcc.css = cssProp)
-              } else if (!cssProp && mediaProp) {
-                cssAcc.mediaQuery = cssAcc.mediaQuery
-                  ? (cssAcc.mediaQuery += mediaProp)
-                  : (cssAcc.mediaQuery = mediaProp)
-              }
-            }
+        const matchArr =
+          cssRulesSelectorsObject.cache &&
+          cssRulesSelectorsObject.cache.length > 0
+            ? cssRulesSelectorsObject.cache.reduce((cssAcc, cssSelector) => {
+                const cssProp =
+                  cssRulesSelectorsObject[cssSelector] &&
+                  cssRulesSelectorsObject[cssSelector].css
+                    ? cssRulesSelectorsObject[cssSelector].css
+                    : false
+                const mediaProp =
+                  cssRulesSelectorsObject[cssSelector] &&
+                  cssRulesSelectorsObject[cssSelector].mediaQuery
+                    ? cssRulesSelectorsObject[cssSelector].mediaQuery
+                    : false
 
-            return cssAcc
-          }, {})
-          : {}
+                if (match.test(cssSelector)) {
+                  if (cssProp) {
+                    if (!cssAcc[localName]) {
+                      if (mediaProp) {
+                        cssAcc[localName] = {
+                          css: cssProp,
+                          mediaQuery: mediaProp
+                        }
+                      } else {
+                        cssAcc[localName] = {
+                          css: cssProp
+                        }
+                      }
+                    }
+                  } else if (mediaProp) {
+                    if (!cssAcc[localName]) {
+                      cssAcc[localName] = {
+                        mediaQuery: mediaProp
+                      }
+                    }
+                  }
+                }
+
+                return cssAcc
+              }, {})
+            : {}
 
         if (cssRulesSelectorsObject.mediaQueries.length > 0) {
-          cssRulesSelectorsObject.mediaQueries.forEach(query => acc.mediaQueries[query] = true)
+          cssRulesSelectorsObject.mediaQueries.forEach(
+            query => (acc.mediaQueries[query] = true)
+          )
         }
 
-        let styleObject;
+        let styleObject
         if (!isEmpty(matchArr)) {
-          const keyReg = new RegExp(`${contextKey}--([a-zA-Z0-9-]+)`,'g')
+          const keyReg = new RegExp(`${contextKey}--([a-zA-Z0-9-]+)`, "g")
           const ids = localName.split(keyReg)
           const name = localName
           const id = ids[1]
@@ -184,16 +196,16 @@ function compose(theme, target) {
 
           styleObject = {
             [localName]: {
-              type: 'css',
-              css: matchArr,
+              type: "css",
+              body: matchArr[localName] || false,
               local: curr
             }
           }
         } else {
           styleObject = {
             [curr]: {
-              type: 'variable',
-              css: localName,
+              type: "variable",
+              body: localName,
               local: false
             }
           }
@@ -208,7 +220,7 @@ function compose(theme, target) {
             if (acc.theme[curr] === localName) {
               acc.theme[curr] = target.theme[curr]
             } else {
-              acc.theme[curr] = [target.theme[curr], localName].join(' ')
+              acc.theme[curr] = [target.theme[curr], localName].join(" ")
             }
           } else if (!acc.theme[curr]) {
             acc.theme[curr] = localName
@@ -233,14 +245,14 @@ function compose(theme, target) {
 }
 
 function cssRulesGenerate(cssTokenizedArray) {
-  const selectorSeparator = ',',
-    ruleSeparator = ':',
-    space = ' '
+  const selectorSeparator = ",",
+    ruleSeparator = ":",
+    space = " "
 
   let currentSelector = false,
     currentMediaSelector = false,
     output = {
-      other: '',
+      other: "",
       mediaQueries: [],
       cache: []
     },
@@ -250,13 +262,13 @@ function cssRulesGenerate(cssTokenizedArray) {
     const hasChildren = token.children ? true : false
 
     switch (token.token) {
-      case '{':
+      case "{":
         //
         // @NOTE: If it's just a normal selector, add its children if it has any
         //
         if (token.selectors !== void 0 && hasChildren) {
           currentSelector = token.code
-          output.cache.push( currentSelector )
+          output.cache.push(currentSelector)
 
           if (!output[currentSelector]) {
             output[currentSelector] = {
@@ -271,7 +283,7 @@ function cssRulesGenerate(cssTokenizedArray) {
           //
           // @NOTE: if it's a media selector, add it to mediaQuery object
           //
-          if (token.atRule === 'media' && hasChildren) {
+          if (token.atRule === "media" && hasChildren) {
             currentMediaSelector = token.code
 
             if (
@@ -281,32 +293,40 @@ function cssRulesGenerate(cssTokenizedArray) {
               output.mediaQueries.push(currentMediaSelector)
             }
 
-            if (
-              currentSelector &&
-              output[currentSelector] &&
-              !output[currentSelector].mediaQuery
-            ) {
-              output[
-                currentSelector
-              ].mediaQuery = `${currentMediaSelector} { ${simpleTokenizer.build(
-                token.children,
-                options
-              )} }`
-            } else if (!currentSelector && !output[currentSelector]) {
-              token.children.forEach(child => {
-                if (child.token === '{' && child.selectors !== void 0) {
-                  currentSelector = child.code
-                  output.cache.push(!output.cache.includes(child.code) && child.node)
+            token.children.forEach(child => {
+              if (child.token === "{" && child.selectors !== void 0) {
+                currentSelector = child.code
+                !output.cache.includes && output.cache.push(child.code)
 
+                if (output[currentSelector]) {
+                  if (!output[currentSelector].mediaQuery) {
+                    output[
+                      currentSelector
+                    ].mediaQuery = `${currentMediaSelector} { ${simpleTokenizer.build(
+                      token.children,
+                      options
+                    )} }`
+                  } else {
+                    output[
+                      currentSelector
+                    ].mediaQuery += `${currentMediaSelector} { ${simpleTokenizer.build(
+                      token.children,
+                      options
+                    )} }`
+                  }
+                } else if (!output[currentSelector]) {
                   output[currentSelector] = {
-                    mediaQuery: `${currentMediaSelector} {${simpleTokenizer.build(child.children,options)}}`
+                    mediaQuery: `${currentMediaSelector} { ${simpleTokenizer.build(
+                      token.children,
+                      options
+                    )} }`
                   }
                 }
-              })
-            }
+              }
+            })
           }
         }
-      break
+        break
       default:
     }
   })

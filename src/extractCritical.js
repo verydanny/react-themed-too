@@ -28,12 +28,12 @@ const extractCritical = ( GlobalContext: global ) => (html: string) => {
       const currentID = classCache[id]
 
       if ( styles[currentID] ) {
-        const currentCss = styles[currentID].css && styles[currentID].css.css
-          ? styles[currentID].css.css
+        const currentCss = styles[currentID].body && styles[currentID].body.css
+          ? styles[currentID].body.css
           : false
 
-        const currentMediaQuery = styles[currentID].css && styles[currentID].css.mediaQuery
-          ? styles[currentID].css.mediaQuery
+        const currentMediaQuery = styles[currentID].body && styles[currentID].body.mediaQuery
+          ? styles[currentID].body.mediaQuery
           : false
 
         if ( currentCss ) {

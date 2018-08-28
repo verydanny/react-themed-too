@@ -9,11 +9,11 @@ const extractCss = ( GlobalContext ) => {
   }
   
   const css = Object.keys(styles).reduce((acc, curr) => {
-    const currentCss = styles[curr].css && styles[curr].css.css
-      ? styles[curr].css.css
+    const currentCss = styles[curr].body && styles[curr].body.css
+      ? styles[curr].body.css
       : false
-    const currentMediaQuery = styles[curr].css && styles[curr].css.mediaQuery
-      ? styles[curr].css.mediaQuery
+    const currentMediaQuery = styles[curr].body && styles[curr].body.mediaQuery
+      ? styles[curr].body.mediaQuery
       : false
 
     if (currentCss) {

@@ -41,12 +41,12 @@ const createRenderToStream = (
         }
 
         Object.keys(ids).forEach(id => {
-          let currentID = classCache[id]
+          const currentID = classCache[id]
 
           if ( styles[currentID] && typeof inserted[id] === 'undefined' && ids[id] === true ) {
             inserted[id] = true
-            let styleCss = styles[currentID] && styles[currentID].css && styles[currentID].css.css ? styles[currentID].css.css : false
-            let styleQuery = styles[currentID] && styles[currentID].css.mediaQuery ? styles[currentID].css.mediaQuery : false
+            const styleCss = styles[currentID] && styles[currentID].body && styles[currentID].body.css ? styles[currentID].body.css : false
+            const styleQuery = styles[currentID] && styles[currentID].body.mediaQuery ? styles[currentID].body.mediaQuery : false
 
             css += styleCss
           }
