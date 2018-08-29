@@ -177,7 +177,7 @@ function compose(theme, target) {
 
         let styleObject
         if (!isEmpty(matchArr)) {
-          const keyReg = new RegExp(`${contextKey}--([a-zA-Z0-9-]+)`, "g")
+          const keyReg = new RegExp(`${contextKey}-([a-zA-Z0-9-]+)`, "g")
           const ids = localName.split(keyReg)
           const name = localName
           const id = ids[1]
