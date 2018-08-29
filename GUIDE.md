@@ -19,7 +19,7 @@
   }
 }
 
-// In same file another same class anme
+// In same file another same class name
 
 .Text {
   font-family: 'Helvetica Neue', sans-serif;
