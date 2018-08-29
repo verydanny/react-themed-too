@@ -61,6 +61,8 @@ const extractCritical = ( GlobalContext: global ) => (html: string) => {
     }
   })
 
+  console.log(o)
+
   return o
 }
 

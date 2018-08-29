@@ -119,55 +119,51 @@ function compose(theme, target) {
     const locals: Object = theme.locals
     const css = compileCssObject.call(theme, false)
 
-    if (css.content) {
-      const tokenizedCssArray = tokenizer.tree(css.content)
-      const cssRulesSelectorsObject = cssRulesGenerate(tokenizedCssArray)
+    return Object.keys(locals).reduce((acc, curr) => {
+      acc.mediaQueries = {}
+      const localName = locals[curr]
+      const match = new RegExp(localName)
 
-      return Object.keys(locals).reduce((acc, curr) => {
-        acc.mediaQueries = {}
-        const localName = locals[curr]
-        const match = new RegExp(localName)
-
+      if (css.content && css.content !== '') {
+        const tokenizedCssArray = tokenizer.tree(css.content)
+        const cssRulesSelectorsObject = cssRulesGenerate(tokenizedCssArray)
         const matchArr =
-          cssRulesSelectorsObject.cache &&
-          cssRulesSelectorsObject.cache.length > 0
-            ? cssRulesSelectorsObject.cache.reduce((cssAcc, cssSelector) => {
-                const cssRule = cssRulesSelectorsObject[cssSelector]
+        cssRulesSelectorsObject.cache &&
+        cssRulesSelectorsObject.cache.length > 0
+          ? cssRulesSelectorsObject.cache.reduce((cssAcc, cssSelector) => {
+              const cssRule = cssRulesSelectorsObject[cssSelector]
 
-                const cssProp = cssRule && cssRule.css
-                  ? cssRule.css
-                  : false
+              const cssProp = cssRule && cssRule.css ? cssRule.css : false
 
-                const mediaProp = cssRule && cssRule.mediaQuery
-                    ? cssRule.mediaQuery
-                    : false
+              const mediaProp =
+                cssRule && cssRule.mediaQuery ? cssRule.mediaQuery : false
 
-                if (match.test(cssSelector)) {
-                  if (cssProp) {
-                    if (!cssAcc[localName]) {
-                      if (mediaProp) {
-                        cssAcc[localName] = {
-                          css: cssProp,
-                          mediaQuery: mediaProp
-                        }
-                      } else {
-                        cssAcc[localName] = {
-                          css: cssProp
-                        }
-                      }
-                    }
-                  } else if (mediaProp) {
-                    if (!cssAcc[localName]) {
+              if (match.test(cssSelector)) {
+                if (cssProp) {
+                  if (!cssAcc[localName]) {
+                    if (mediaProp) {
                       cssAcc[localName] = {
+                        css: cssProp,
                         mediaQuery: mediaProp
+                      }
+                    } else {
+                      cssAcc[localName] = {
+                        css: cssProp
                       }
                     }
                   }
+                } else if (mediaProp) {
+                  if (!cssAcc[localName]) {
+                    cssAcc[localName] = {
+                      mediaQuery: mediaProp
+                    }
+                  }
                 }
+              }
 
-                return cssAcc
-              }, {})
-            : {}
+              return cssAcc
+            }, {})
+          : {}
 
         if (cssRulesSelectorsObject.mediaQueries.length > 0) {
           cssRulesSelectorsObject.mediaQueries.forEach(
@@ -210,22 +206,6 @@ function compose(theme, target) {
           }
         }
 
-        if (!acc.theme) {
-          acc.theme = {
-            ...locals
-          }
-        } else {
-          if (acc.theme[curr]) {
-            if (acc.theme[curr] === localName) {
-              acc.theme[curr] = target.theme[curr]
-            } else {
-              acc.theme[curr] = [target.theme[curr], localName].join(" ")
-            }
-          } else if (!acc.theme[curr]) {
-            acc.theme[curr] = localName
-          }
-        }
-
         if (!acc.styles) {
           acc.styles = styleObject
         } else {
@@ -234,10 +214,26 @@ function compose(theme, target) {
             ...styleObject
           }
         }
+      }
 
-        return acc
-      }, target)
-    }
+      if (!acc.theme) {
+        acc.theme = {
+          ...locals
+        }
+      } else {
+        if (acc.theme[curr]) {
+          if (acc.theme[curr] === localName) {
+            acc.theme[curr] = target.theme[curr]
+          } else {
+            acc.theme[curr] = [target.theme[curr], localName].join(" ")
+          }
+        } else if (!acc.theme[curr]) {
+          acc.theme[curr] = localName
+        }
+      }
+
+      return acc
+    }, target)
   } else {
     return composeThemes(target, theme)
   }
@@ -272,10 +268,10 @@ function cssRulesGenerate(cssTokenizedArray) {
           if (!output[currentSelector]) {
             output[currentSelector] = {
               ...output[currentSelector],
-              css: `${currentSelector} { ${simpleTokenizer.build(
+              css: `${currentSelector}{${simpleTokenizer.build(
                 token.children,
                 options
-              )} }`
+              )}}`
             }
           }
         } else if (token.atRule !== void 0) {
@@ -291,7 +287,9 @@ function cssRulesGenerate(cssTokenizedArray) {
             ) {
               output.mediaQueries.push(currentMediaSelector)
             }
-
+            //
+            // @NOTE: I'm assuming things only go 1 level deep, need recursive solution
+            //
             token.children.forEach(child => {
               if (child.token === "{" && child.selectors !== void 0) {
                 currentSelector = child.code
@@ -301,24 +299,24 @@ function cssRulesGenerate(cssTokenizedArray) {
                   if (!output[currentSelector].mediaQuery) {
                     output[
                       currentSelector
-                    ].mediaQuery = `${currentMediaSelector} { ${simpleTokenizer.build(
+                    ].mediaQuery = `${currentMediaSelector}{${simpleTokenizer.build(
                       token.children,
                       options
-                    )} }`
+                    )}}`
                   } else {
                     output[
                       currentSelector
-                    ].mediaQuery += `${currentMediaSelector} { ${simpleTokenizer.build(
+                    ].mediaQuery += `${currentMediaSelector}{${simpleTokenizer.build(
                       token.children,
                       options
-                    )} }`
+                    )}}`
                   }
                 } else if (!output[currentSelector]) {
                   output[currentSelector] = {
-                    mediaQuery: `${currentMediaSelector} { ${simpleTokenizer.build(
+                    mediaQuery: `${currentMediaSelector}{${simpleTokenizer.build(
                       token.children,
                       options
-                    )} }`
+                    )}}`
                   }
                 }
               }
