@@ -129,15 +129,15 @@ body, html {
 import * as React from 'react'
 import { themed } from 'react-themed-too'
 
-const Modal = ({theme, ...props}) => {
+const Model = ({theme, ...props}) => {
   return (
-    <div className={theme.Modal}>
-      <p className={theme.Modal__Text}>Some random text</p>
+    <div className={theme.Model}>
+      <p className={theme.Model__Text}>Some random text</p>
     </div>
   )
 }
 
-export default themed(/Text/)(Button)
+export default themed(/Model/)(Button)
 ```
 
 ### `Button.tsx`
