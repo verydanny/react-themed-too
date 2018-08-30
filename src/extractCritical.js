@@ -4,7 +4,7 @@ import { contextSecret, contextKey } from './const'
 const extractCritical = ( GlobalContext: global ) => (html: string) => {
   const { styles, classCache, globalCss } = GlobalContext[ contextSecret ]
   let { inserted, insertedCache } = GlobalContext[ contextSecret ]
-  let RGX = new RegExp(`${ contextKey }-([a-zA-Z0-9-]+)`, 'gm')
+  const RGX = new RegExp(`${ contextKey }-([a-zA-Z0-9-]+)`, 'gm')
   let o = { html, body: {
     css: '',
     mediaQueries: ''
@@ -60,8 +60,6 @@ const extractCritical = ( GlobalContext: global ) => (html: string) => {
       o.body.mediaQueries += inserted[id].mediaQuery ? inserted[id].mediaQuery : ''
     }
   })
-
-  console.log(o)
 
   return o
 }

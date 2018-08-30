@@ -13,12 +13,12 @@ function createThemed( context: React.Context<any>, GlobalContext: global ) {
   }
 
   if ( isBrowser ) {
-    let chunks = document.querySelectorAll(`[data-${contextKey}]`)
-    let tag = document.createElement('style')
+    const chunks = document.querySelectorAll(`[data-${contextKey}]`)
+    const tag = document.createElement('style')
 
     Array.prototype.forEach.call(chunks, node => {
-      let id = node.getAttribute(`data-${contextKey}`).split(' ')
-      let innerCss = node.innerText
+      const id = node.getAttribute(`data-${contextKey}`).split(' ')
+      const innerCss = node.innerText
 
       tag.appendChild(document.createTextNode(innerCss))
       node.remove()
