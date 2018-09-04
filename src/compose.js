@@ -122,7 +122,9 @@ function compose(theme, target) {
     return Object.keys(locals).reduce((acc, curr) => {
       acc.mediaQueries = {}
       const localName = locals[curr]
-      const match = new RegExp(localName)
+      const match = new RegExp(`\\.${localName}(?!\\s?\\.rt)`)
+
+      console.log("REGULAR EXP", match)
 
       if (css.content && css.content !== '') {
         const tokenizedCssArray = tokenizer.tree(css.content)
@@ -139,24 +141,19 @@ function compose(theme, target) {
                 cssRule && cssRule.mediaQuery ? cssRule.mediaQuery : false
 
               if (match.test(cssSelector)) {
-                if (cssProp) {
-                  if (!cssAcc[localName]) {
-                    if (mediaProp) {
-                      cssAcc[localName] = {
-                        css: cssProp,
-                        mediaQuery: mediaProp
-                      }
-                    } else {
-                      cssAcc[localName] = {
-                        css: cssProp
-                      }
-                    }
+                if (!cssAcc[localName]) {
+                  cssAcc[localName] = {
+                    css: cssProp,
+                    mediaQuery: mediaProp
                   }
-                } else if (mediaProp) {
-                  if (!cssAcc[localName]) {
-                    cssAcc[localName] = {
-                      mediaQuery: mediaProp
-                    }
+                } else if (cssAcc[localName]) {
+                  cssAcc[localName] = {
+                    css: cssAcc[localName].css ?
+                      cssAcc[localName].css + cssProp
+                      : cssProp,
+                    mediaQuery: cssAcc[localName].mediaQuery ?
+                      cssAcc[localName].mediaQuery + mediaProp
+                      : mediaProp
                   }
                 }
               }
