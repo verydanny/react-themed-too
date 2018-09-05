@@ -2,6 +2,10 @@
 
 Theme management and css injection utilizing css-loader.
 
+## Change Log
+
+- **11/5/2018** - Fixed `RegExp` matching that caused some css to be missed on compose.
+
 ## Documentation
 - [Installation](#installation)
 - [Composition](#compose)
