@@ -122,7 +122,7 @@ function compose(theme, target) {
     return Object.keys(locals).reduce((acc, curr) => {
       acc.mediaQueries = {}
       const localName = locals[curr]
-      const match = new RegExp(`\\.${localName}(?!\\s?\\.${contextKey})`)
+      const match = new RegExp(`\\.${localName}(?!\\s?\\.${contextKey}).*$`)
 
       if (css.content && css.content !== '') {
         const tokenizedCssArray = tokenizer.tree(css.content)
@@ -168,7 +168,7 @@ function compose(theme, target) {
 
         let styleObject
         if (!isEmpty(matchArr)) {
-          const keyReg = new RegExp(`${contextKey}-([a-zA-Z0-9-]+)`, "g")
+          const keyReg = new RegExp(`${contextKey}-([a-zA-Z0-9-+/]+)`, "g")
           const ids = localName.split(keyReg)
           const name = localName
           const id = ids[1]
