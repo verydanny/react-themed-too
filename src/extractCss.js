@@ -1,7 +1,7 @@
 // @flow
 import { contextKey, contextSecret } from './const'
 
-const extractCss = ( GlobalContext ) => {
+const extractCss = ( GlobalContext ) => () => {
   const { styles, globalCss } = GlobalContext[ contextSecret ]
   let target = {
     css: '',
@@ -18,6 +18,10 @@ const extractCss = ( GlobalContext ) => {
 
     if (currentCss) {
       acc.css += currentCss
+
+      if (currentMediaQuery) {
+        acc.mediaQueries += currentMediaQuery
+      }
     } else if (currentMediaQuery) {
       acc.mediaQueries += currentMediaQuery
     }
