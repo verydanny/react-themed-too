@@ -8,7 +8,7 @@ const extractCss = ( GlobalContext ) => () => {
     mediaQueries: ''
   }
   
-  const css = Object.keys(styles).reduce((acc, curr) => {
+  Object.keys(styles).reduce((acc, curr) => {
     const currentCss = styles[curr].body && styles[curr].body.css
       ? styles[curr].body.css
       : false
