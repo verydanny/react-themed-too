@@ -115,122 +115,126 @@ function isEmpty(obj) {
 }
 
 function compose(theme, target) {
-  if (theme.locals) {
-    const locals: Object = theme.locals
-    const css = compileCssObject.call(theme, false)
+  try {
+    if (theme.locals) {
+      const locals: Object = theme.locals
+      const css = compileCssObject.call(theme, false)
 
-    return Object.keys(locals).reduce((acc, curr) => {
-      acc.mediaQueries = {}
-      const localName = locals[curr]
-      const match = new RegExp(`\\.${localName}(?!\\s?\\.${contextKey}).*$`)
+      return Object.keys(locals).reduce((acc, curr) => {
+        acc.mediaQueries = {}
+        const localName = locals[curr]
+        const match = new RegExp(`\\.${localName}(?!\\s?\\.${contextKey}).*$`)
 
-      if (css.content && css.content !== '') {
-        const tokenizedCssArray = tokenizer.tree(css.content)
-        const cssRulesSelectorsObject = cssRulesGenerate(tokenizedCssArray)
-        const matchArr =
-        cssRulesSelectorsObject.cache &&
-        cssRulesSelectorsObject.cache.length > 0
-          ? cssRulesSelectorsObject.cache.reduce((cssAcc, cssSelector) => {
-              const cssRule = cssRulesSelectorsObject[cssSelector]
+        if (css.content && css.content !== '') {
+          const tokenizedCssArray = tokenizer.tree(css.content)
+          const cssRulesSelectorsObject = cssRulesGenerate(tokenizedCssArray)
+          const matchArr =
+            cssRulesSelectorsObject.cache &&
+              cssRulesSelectorsObject.cache.length > 0
+              ? cssRulesSelectorsObject.cache.reduce((cssAcc, cssSelector) => {
+                const cssRule = cssRulesSelectorsObject[cssSelector]
 
-              const cssProp = cssRule && cssRule.css ? cssRule.css : false
+                const cssProp = cssRule && cssRule.css ? cssRule.css : false
 
-              const mediaProp =
-                cssRule && cssRule.mediaQuery ? cssRule.mediaQuery : false
+                const mediaProp =
+                  cssRule && cssRule.mediaQuery ? cssRule.mediaQuery : false
 
-              if (match.test(cssSelector)) {
-                if (!cssAcc[localName]) {
-                  cssAcc[localName] = {
-                    css: cssProp,
-                    mediaQuery: mediaProp
-                  }
-                } else if (cssAcc[localName]) {
-                  cssAcc[localName] = {
-                    css: cssAcc[localName].css ?
-                      cssAcc[localName].css + cssProp
-                      : cssProp,
-                    mediaQuery: cssAcc[localName].mediaQuery ?
-                      cssAcc[localName].mediaQuery + mediaProp
-                      : mediaProp
+                if (match.test(cssSelector)) {
+                  if (!cssAcc[localName]) {
+                    cssAcc[localName] = {
+                      css: cssProp,
+                      mediaQuery: mediaProp
+                    }
+                  } else if (cssAcc[localName]) {
+                    cssAcc[localName] = {
+                      css: cssAcc[localName].css ?
+                        cssAcc[localName].css + cssProp
+                        : cssProp,
+                      mediaQuery: cssAcc[localName].mediaQuery ?
+                        cssAcc[localName].mediaQuery + mediaProp
+                        : mediaProp
+                    }
                   }
                 }
+
+                return cssAcc
+              }, {})
+              : {}
+
+          if (cssRulesSelectorsObject.mediaQueries.length > 0) {
+            cssRulesSelectorsObject.mediaQueries.forEach(
+              query => (acc.mediaQueries[query] = true)
+            )
+          }
+
+          let styleObject
+          if (!isEmpty(matchArr)) {
+            const keyReg = new RegExp(`${contextKey}-([a-zA-Z0-9-+/]+)`, "g")
+            const ids = localName.split(keyReg)
+            const name = localName
+            const id = ids[1]
+
+            if (!acc.classCache) {
+              acc.classCache = {
+                [id]: name
               }
+            } else {
+              acc.classCache = {
+                ...acc.classCache,
+                [id]: name
+              }
+            }
 
-              return cssAcc
-            }, {})
-          : {}
-
-        if (cssRulesSelectorsObject.mediaQueries.length > 0) {
-          cssRulesSelectorsObject.mediaQueries.forEach(
-            query => (acc.mediaQueries[query] = true)
-          )
-        }
-
-        let styleObject
-        if (!isEmpty(matchArr)) {
-          const keyReg = new RegExp(`${contextKey}-([a-zA-Z0-9-+/]+)`, "g")
-          const ids = localName.split(keyReg)
-          const name = localName
-          const id = ids[1]
-
-          if (!acc.classCache) {
-            acc.classCache = {
-              [id]: name
+            styleObject = {
+              [localName]: {
+                type: "css",
+                body: matchArr[localName] || false,
+                local: curr
+              }
             }
           } else {
-            acc.classCache = {
-              ...acc.classCache,
-              [id]: name
+            styleObject = {
+              [curr]: {
+                type: "variable",
+                body: localName,
+                local: false
+              }
             }
           }
 
-          styleObject = {
-            [localName]: {
-              type: "css",
-              body: matchArr[localName] || false,
-              local: curr
-            }
-          }
-        } else {
-          styleObject = {
-            [curr]: {
-              type: "variable",
-              body: localName,
-              local: false
-            }
-          }
-        }
-
-        if (!acc.styles) {
-          acc.styles = styleObject
-        } else {
-          acc.styles = {
-            ...acc.styles,
-            ...styleObject
-          }
-        }
-      }
-
-      if (!acc.theme) {
-        acc.theme = {
-          ...locals
-        }
-      } else {
-        if (acc.theme[curr]) {
-          if (acc.theme[curr] === localName) {
-            acc.theme[curr] = target.theme[curr]
+          if (!acc.styles) {
+            acc.styles = styleObject
           } else {
-            acc.theme[curr] = [target.theme[curr], localName].join(" ")
+            acc.styles = {
+              ...acc.styles,
+              ...styleObject
+            }
           }
-        } else if (!acc.theme[curr]) {
-          acc.theme[curr] = localName
         }
-      }
 
-      return acc
-    }, target)
-  } else {
-    return composeThemes(target, theme)
+        if (!acc.theme) {
+          acc.theme = {
+            ...locals
+          }
+        } else {
+          if (acc.theme[curr]) {
+            if (acc.theme[curr] === localName) {
+              acc.theme[curr] = target.theme[curr]
+            } else {
+              acc.theme[curr] = [target.theme[curr], localName].join(" ")
+            }
+          } else if (!acc.theme[curr]) {
+            acc.theme[curr] = localName
+          }
+        }
+
+        return acc
+      }, target)
+    } else {
+      return composeThemes(target, theme)
+    }
+  } catch(e) {
+    console.log(e)
   }
 }
 
