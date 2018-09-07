@@ -31,3 +31,9 @@ test('Webpack basic success', () => {
 test('Locals matches mock', () => {
   expect(cssFile.locals).toEqual(locals)
 })
+
+test('Composed theme is equal to locals', () => {
+  import('../compose').then(({ default: compose }) => {
+    expect(compose({}, cssFile).theme).toEqual(locals)
+  })
+})
