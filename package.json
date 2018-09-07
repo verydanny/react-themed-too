@@ -22,19 +22,19 @@
     "README.md"
   ],
   "devDependencies": {
-    "@babel/cli": "^7.0.0-rc.1",
-    "@babel/core": "^7.0.0-rc.1",
-    "@babel/plugin-proposal-class-properties": "^7.0.0-rc.1",
-    "@babel/plugin-proposal-decorators": "^7.0.0-rc.1",
-    "@babel/plugin-proposal-object-rest-spread": "^7.0.0-rc.1",
-    "@babel/plugin-transform-modules-commonjs": "^7.0.0-rc.1",
-    "@babel/preset-flow": "^7.0.0-rc.1",
-    "@babel/preset-react": "^7.0.0-rc.1",
+    "@babel/cli": "^7.0.0",
+    "@babel/core": "^7.0.0",
+    "@babel/plugin-proposal-class-properties": "^7.0.0",
+    "@babel/plugin-proposal-decorators": "^7.0.0",
+    "@babel/plugin-proposal-object-rest-spread": "^7.0.0",
+    "@babel/plugin-transform-modules-commonjs": "^7.0.0",
+    "@babel/preset-flow": "^7.0.0",
+    "@babel/preset-react": "^7.0.0",
     "babel-core": "^7.0.0-0",
     "babel-jest": "^23.4.2",
     "babel-plugin-dynamic-import-node": "^2.1.0",
     "css-loader": "^1.0.0",
-    "flow-bin": "^0.78.0",
+    "flow-bin": "^0.80.0",
     "jest": "^23.5.0",
     "memory-fs": "^0.4.1",
     "node-eval": "^2.0.0",
@@ -45,7 +45,7 @@
   "dependencies": {
     "html-tokenize": "^2.0.0",
     "multipipe": "^2.0.3",
-    "react": "^16.4.2",
+    "react": "^16.5.0",
     "simple-tokenizer": "^1.0.2",
     "through": "^2.3.8"
   }

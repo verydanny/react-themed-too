@@ -4,6 +4,7 @@
     "@babel/flow"
   ],
   "plugins": [
+    "babel-plugin-dynamic-import-node",
     "@babel/plugin-transform-modules-commonjs",
     "@babel/plugin-proposal-object-rest-spread",
     ["@babel/plugin-proposal-decorators", {
@@ -12,12 +13,5 @@
     ["@babel/plugin-proposal-class-properties", {
       "loose": true
     }]
-  ],
-  "env": {
-    "test": {
-      "plugins": [
-        "babel-plugin-dynamic-import-node"
-      ]
-    }
-  }
+  ]
 }
