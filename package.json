@@ -1,6 +1,6 @@
 {
   "name": "react-themed-too",
-  "version": "0.3.3",
+  "version": "0.4.2",
   "description": "CSS in React",
   "main": "./lib/index.js",
   "author": "Daniil Veremchuk",
@@ -10,7 +10,7 @@
     "publish": "yarn build",
     "start": "yarn babel --watch ./src --out-dir lib",
     "build": "yarn babel ./src --out-dir ./lib",
-    "test": "jest"
+    "test": "NODE_ENV=test jest"
   },
   "directories": {
     "lib": "./lib"
