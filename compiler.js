@@ -3,7 +3,7 @@ import webpack from 'webpack'
 import memoryfs from 'memory-fs'
 import { webpackIdentity } from './src/const'
 
-export default (fixture, options = {}) => {
+export default (fixture, { browser }) => {
   const compiler = webpack({
     mode: 'development',
     entry: `${fixture}`,
@@ -19,7 +19,7 @@ export default (fixture, options = {}) => {
         {
           test: /\.css$/,
           use: {
-            loader: 'css-loader',
+            loader: browser ? 'css-loader/locals' : 'css-loader',
             options: {
               modules: true,
               camelCase: true,

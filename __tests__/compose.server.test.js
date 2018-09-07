@@ -5,17 +5,27 @@
 import path from "path"
 import nodeEval from "node-eval"
 
-import compiler from '../compiler'
-import paths from '../paths'
+import compiler from "../compiler"
+import paths from "../paths"
 
-let cssFile
+let cssFileServer
+let cssFileBrowser
 
 // Convert this to read multiple css files and scss files
 beforeAll(async () => {
-  const stats = await compiler(path.resolve(paths.TEST, "css/test.css"))
+  const statsBrowser = await compiler(
+    path.resolve(paths.TEST, "css/test.css"),
+    {
+      browser: true
+    }
+  )
+  const statsServer = await compiler(path.resolve(paths.TEST, "css/test.css"), {
+    browser: false
+  })
+
   const cssFileName = new RegExp("test.css")
 
-  const cssFileModule = stats.toJson().modules.filter(module => {
+  const cssFileModuleBrowser = statsBrowser.toJson().modules.filter(module => {
     if (module.id.match(cssFileName)) {
       return true
     } else {
@@ -23,16 +33,42 @@ beforeAll(async () => {
     }
   })[0]
 
-  cssFile = nodeEval(cssFileModule.source, "css/test.js")
+  const cssFileModuleServer = statsServer.toJson().modules.filter(module => {
+    if (module.id.match(cssFileName)) {
+      return true
+    } else {
+      return false
+    }
+  })[0]
+
+  cssFileBrowser = nodeEval(cssFileModuleBrowser.source, "css/test.js")
+  cssFileServer = nodeEval(cssFileModuleServer.source, "css/test.js")
 }, 6000)
 
-test('Webpack basic success', () => {
-  expect(cssFile.locals).toBeTruthy()
+test("Webpack basic browser success", () => {
+  expect(cssFileBrowser).toBeTruthy()
 })
 
-test('Composed theme is equal to cssFile locals', () => {
-  import('../src/compose').then(({ default: compose }) => {
-    const theme = compose({}, cssFile)
-    expect(theme.theme).toEqual(cssFile.locals)
+test("Webpack basic server success", () => {
+  expect(cssFileServer.locals).toBeTruthy()
+})
+
+test("Composed theme is equal to server locals", () => {
+  import("../src/compose").then(({ default: compose }) => {
+    const theme = compose(
+      {},
+      cssFileServer
+    )
+    expect(theme.theme).toEqual(cssFileServer.locals)
+  })
+})
+
+test("Composed theme is equal to browser locals", () => {
+  import("../src/compose").then(({ default: compose }) => {
+    const theme = compose(
+      {},
+      cssFileServer
+    )
+    expect(theme.theme).toEqual(cssFileBrowser)
   })
 })
