@@ -1,6 +1,6 @@
 {
   "name": "react-themed-too",
-  "version": "0.4.5",
+  "version": "0.4.6",
   "description": "CSS in React",
   "main": "./lib/index.js",
   "author": "Daniil Veremchuk",
@@ -12,6 +12,14 @@
     "build": "yarn babel ./src --out-dir ./lib",
     "test": "NODE_ENV=test jest"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/verydanny/react-themed-too/"
+  },
+  "bugs": {
+    "url": "https://github.com/verydanny/react-themed-too/issues"
+  },
+  "homepage": "https://github.com/verydanny/",
   "directories": {
     "lib": "./lib"
   },
