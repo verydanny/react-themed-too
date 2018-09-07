@@ -11,27 +11,34 @@ import paths from "../paths"
 let cssFileServer
 let cssFileBrowser
 
-// Convert this to read multiple css files and scss files
-beforeAll(async () => {
+let cssServer = {}
+let cssBrowser = {}
+
+async function singleFileCompose() {
   const statsBrowser = await compiler(
     path.resolve(paths.TEST, "css/test.css"),
     {
       browser: true
     }
   )
-  const statsServer = await compiler(path.resolve(paths.TEST, "css/test.css"), {
-    browser: false
-  })
+  const statsServer = await compiler(
+    path.resolve(paths.TEST, "css/test.css"),
+    {
+      browser: false
+    }
+  )
 
   const cssFileName = new RegExp("test.css")
 
-  const cssFileModuleBrowser = statsBrowser.toJson().modules.filter(module => {
-    if (module.id.match(cssFileName)) {
-      return true
-    } else {
-      return false
-    }
-  })[0]
+  const cssFileModuleBrowser = statsBrowser
+    .toJson()
+    .modules.filter(module => {
+      if (module.id.match(cssFileName)) {
+        return true
+      } else {
+        return false
+      }
+    })[0]
 
   const cssFileModuleServer = statsServer.toJson().modules.filter(module => {
     if (module.id.match(cssFileName)) {
@@ -43,6 +50,18 @@ beforeAll(async () => {
 
   cssFileBrowser = nodeEval(cssFileModuleBrowser.source, "css/test.js")
   cssFileServer = nodeEval(cssFileModuleServer.source, "css/test.js")
+}
+
+async function multiFileCompose() {
+  // read css dir sync
+  // get paths of all css
+  // process through async compile function
+  // add result to cssServer/Browser object
+}
+
+// Convert this to read multiple css files and scss files
+beforeAll(async () => {
+  await singleFileCompose()
 }, 6000)
 
 test("Webpack basic browser success", () => {
