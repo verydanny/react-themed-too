@@ -234,6 +234,8 @@ function compose(theme, target) {
       return composeThemes(target, theme)
     }
   } catch(e) {
+    console.log("\x1b[33m", "Info >>> If you're getting a property 'locals' TypeError, this usually means improper file imports", "\x1b[0m")
+    console.log("\x1b[33m", "Please check how you're importing the css file, named imports when they're default will result in this error.", "\x1b[0m")
     console.log(e)
   }
 }
