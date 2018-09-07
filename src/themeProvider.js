@@ -25,8 +25,6 @@ export default function ThemeProvider( context: React.Context<any>, GlobalContex
       } else if (isBrowser) {
         GlobalContext[contextSecret].theme = compose(normalizedTheme, globalLocals)
       }
-
-      console.log(GlobalContext[contextSecret])
     }
 
     render() {
