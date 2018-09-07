@@ -34,6 +34,7 @@ test('Locals matches mock', () => {
 
 test('Composed theme is equal to locals', () => {
   import('../compose').then(({ default: compose }) => {
+    console.log(compose({}, cssFile))
     expect(compose({}, cssFile).theme).toEqual(locals)
   })
 })

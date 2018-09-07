@@ -46,22 +46,39 @@ const createRenderToStream = GlobalContext => () => {
           if (
             styles[currentID] &&
             typeof inserted[id] === "undefined" &&
-            ids[id] === true
+            ids[id]
           ) {
-            inserted[id] = true
-            const styleCss =
+            // start cache
+            inserted[id] = {}
+
+            const currentCss =
               styles[currentID] &&
               styles[currentID].body &&
               styles[currentID].body.css
                 ? styles[currentID].body.css
-                : false
-            const styleQuery =
-              styles[currentID] && styles[currentID].body.mediaQuery
+                : ""
+            
+            const currentMediaQuery =
+              styles[currentID] &&
+              styles[currentID].body &&
+              styles[currentID].body.mediaQuery
                 ? styles[currentID].body.mediaQuery
-                : false
+                : ""
 
-            css += styleCss ? styleCss : ""
-            css += styleQuery ? styleQuery : ""
+            css += currentCss !== "" || currentMediaQuery !== ""
+              ? currentCss + currentMediaQuery
+              : ""
+
+            // cache it
+            inserted[id].css = currentCss ? currentCss : ""
+            inserted[id].mediaQuery = currentMediaQuery ? currentMediaQuery : ""
+          } else if (
+            styles[currentID] &&
+            inserted[id] &&
+            ids[id]
+          ) {
+            css += inserted[id].css !== "" ? inserted[id].css : ""
+            css += inserted[id].mediaQuery !== "" ? inserted[id].mediaQuery : ""
           }
         })
 

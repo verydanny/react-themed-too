@@ -1,18 +1,21 @@
 // @flow
-import { contextSecret, contextKey } from './const'
+import { contextSecret, contextKey } from "./const"
 
-const extractCritical = ( GlobalContext: global ) => (html: string) => {
-  const { styles, classCache, globalCss } = GlobalContext[ contextSecret ]
-  let { inserted, insertedCache } = GlobalContext[ contextSecret ]
-  const RGX = new RegExp(`${ contextKey }-([a-zA-Z0-9-]+)`, 'gm')
-  let o = { html, body: {
-    css: '',
-    mediaQueries: ''
-  }}
+const extractCritical = (GlobalContext: global) => (html: string) => {
+  const { styles, classCache, globalCss } = GlobalContext[contextSecret]
+  let { inserted, insertedCache } = GlobalContext[contextSecret]
+  const RGX = new RegExp(`${contextKey}-([a-zA-Z0-9-]+)`, "gm")
+  let o = {
+    html,
+    body: {
+      css: "",
+      mediaQueries: ""
+    }
+  }
   let match
   let ids = {}
 
-  if ( globalCss !== '' ) {
+  if (globalCss !== "") {
     o.body.css += globalCss
   }
 
@@ -23,41 +26,49 @@ const extractCritical = ( GlobalContext: global ) => (html: string) => {
   }
 
   Object.keys(ids).filter(id => {
-    if ( ids[id] && typeof inserted[id] === 'undefined' && classCache[id] ) {
+    if (ids[id] && typeof inserted[id] === "undefined" && classCache[id]) {
       inserted[id] = true
       const currentID = classCache[id]
 
-      if ( styles[currentID] ) {
+      if (styles[currentID]) {
         inserted[id] = {}
 
-        const currentCss = styles[currentID].body && styles[currentID].body.css
-          ? styles[currentID].body.css
-          : false
+        const currentCss =
+          styles[currentID] &&
+          styles[currentID].body &&
+          styles[currentID].body.css
+            ? styles[currentID].body.css
+            : false
 
-        const currentMediaQuery = styles[currentID].body && styles[currentID].body.mediaQuery
-          ? styles[currentID].body.mediaQuery
-          : false
+        const currentMediaQuery =
+          styles[currentID] &&
+          styles[currentID].body &&
+          styles[currentID].body.mediaQuery
+            ? styles[currentID].body.mediaQuery
+            : false
 
-        if ( currentCss ) {
+        if (currentCss) {
           o.body.css += currentCss
           inserted[id].css = currentCss
 
-          if ( currentMediaQuery ) {
+          if (currentMediaQuery) {
             o.body.mediaQueries += currentMediaQuery
             inserted[id].mediaQuery = currentMediaQuery
           }
 
           return true
-        } else if ( currentMediaQuery ) {
+        } else if (currentMediaQuery) {
           o.body.css += currentMediaQuery
           inserted[id].mediaQuery = currentMediaQuery
 
           return true
         }
       }
-    } else if ( ids[id] && inserted[id] && classCache[id] ) {
-      o.body.css += inserted[id].css ? inserted[id].css : ''
-      o.body.mediaQueries += inserted[id].mediaQuery ? inserted[id].mediaQuery : ''
+    } else if (ids[id] && inserted[id] && classCache[id]) {
+      o.body.css += inserted[id].css ? inserted[id].css : ""
+      o.body.mediaQueries += inserted[id].mediaQuery
+        ? inserted[id].mediaQuery
+        : ""
     }
   })
 

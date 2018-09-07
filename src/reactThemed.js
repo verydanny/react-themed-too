@@ -2,7 +2,7 @@
 import * as React from 'react'
 
 import { contextSecret, contextKey, webpackIdentity } from './const'
-import { isBrowser, isServer } from './utils'
+import { isBrowser } from './utils'
 import themed from './themed'
 import ThemeProvider from './themeProvider'
 import compose, { compileCssObject } from './compose'
@@ -28,15 +28,21 @@ function createThemed( context: React.Context<any>, GlobalContext: global ) {
   }
 
   function addGlobalCss( ...cssFile ) {
-    GlobalContext[ contextSecret ].globalCss += cssFile.reduce((acc, curr) => {
-      if (curr.locals && isServer) {
-        let css = compileCssObject.call(curr, false)
+    const globalCss = cssFile.reduce((acc, curr) => {
+      if (curr.locals && !isBrowser) {
+        const css = compileCssObject.call(curr, false)
 
-        acc += css.content
+        compose(GlobalContext[ contextSecret ].globalLocals, curr.locals)
 
-        return acc
+        return acc += css.content ? css.content : ""
+      } else if (isBrowser) {
+        compose(GlobalContext[contextSecret].globalLocals, curr)
       }
+
+      return acc
     }, '')
+
+    GlobalContext[contextSecret].globalCss += globalCss
   }
 
   const reactThemed = {
@@ -44,7 +50,9 @@ function createThemed( context: React.Context<any>, GlobalContext: global ) {
     ThemeProvider: ThemeProvider( context, GlobalContext ),
     compose,
     globalCss: '',
+    globalLocals: {},
     addGlobalCss,
+    theme: {},
     styles: {},
     inserted: {},
     classCache: {},

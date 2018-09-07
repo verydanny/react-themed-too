@@ -1,6 +1,6 @@
 // @flow
 import simpleTokenizer from "simple-tokenizer"
-import { isServer } from "./utils"
+import { isBrowser } from "./utils"
 import { contextKey } from "./const"
 
 const tokenizer = new simpleTokenizer()
@@ -94,14 +94,14 @@ export function compileCssObject(useSourceMap) {
   for (let i = 0; i < this.length; ++i) {
     const content = mapCssToSource(this[i], useSourceMap)
 
+    //
+    // @NOTE: This mediaQuery might be an issue in the future
+    //
     if (this[i][2]) {
-      cssObject = {
-        mediaQuery: `@media ${this[i][2]} { ${content} }`,
-        content: content
-      }
+      cssObject.mediaQuery = `@media ${this[i][2]} { ${content} }`
     }
 
-    cssObject = { content: content }
+    cssObject.content = content
   }
 
   return cssObject
@@ -331,7 +331,7 @@ function cssRulesGenerate(cssTokenizedArray) {
 }
 
 export default (target: Object = {}, ...themes: Array<CssLoaderT>) => {
-  if (isServer) {
+  if (!isBrowser) {
     return themes.reduce((acc, curr) => {
       if (!acc) {
         acc = compose(

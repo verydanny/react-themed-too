@@ -1,6 +1,6 @@
 // @flow
 import * as React from 'react'
-import { isServer } from './utils'
+import { isBrowser } from './utils'
 import compose from './compose'
 import { contextSecret } from './const'
 
@@ -11,22 +11,27 @@ export default function ThemeProvider( context: React.Context<any>, GlobalContex
       super(props)
 
       const { theme } = this.props
+      const globalLocals = GlobalContext[contextSecret].globalLocals
+      const normalizedStyles = theme.styles ? theme.styles : {}
+      const normalizedTheme = theme.theme ? theme.theme : theme
 
-      if (theme && isServer) {
-        GlobalContext[ contextSecret ].styles = theme.styles ? theme.styles : theme
-
+      if (theme && !isBrowser) {
+        GlobalContext[ contextSecret ].styles = normalizedStyles
+        GlobalContext[ contextSecret ].theme = compose(normalizedTheme, globalLocals)
 
         if (theme.classCache) {
           GlobalContext[ contextSecret ].classCache = theme.classCache
         }
+      } else if (isBrowser) {
+        GlobalContext[contextSecret].theme = compose(normalizedTheme, globalLocals)
       }
+
+      console.log(GlobalContext[contextSecret])
     }
 
     render() {
       const { children } = this.props
-      let { theme } = this.props
-
-      theme = theme.theme ? theme.theme : theme
+      const theme = GlobalContext[ contextSecret ].theme
 
       return (
         <context.Provider value={ theme }>
