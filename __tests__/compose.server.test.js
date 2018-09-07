@@ -1,14 +1,16 @@
+/**
+ * @jest-environment node
+ */
+
 import path from "path"
 import nodeEval from "node-eval"
 
-import compiler from '../../compiler'
-import paths from '../../paths'
-import { locals } from '../mocks/test.css'
+import compiler from '../compiler'
+import paths from '../paths'
 
 let cssFile
 
 // Convert this to read multiple css files and scss files
-
 beforeAll(async () => {
   const stats = await compiler(path.resolve(paths.TEST, "css/test.css"))
   const cssFileName = new RegExp("test.css")
@@ -28,13 +30,9 @@ test('Webpack basic success', () => {
   expect(cssFile.locals).toBeTruthy()
 })
 
-test('Locals matches mock', () => {
-  expect(cssFile.locals).toEqual(locals)
-})
-
-test('Composed theme is equal to locals', () => {
-  import('../compose').then(({ default: compose }) => {
-    console.log(compose({}, cssFile))
-    expect(compose({}, cssFile).theme).toEqual(locals)
+test('Composed theme is equal to cssFile locals', () => {
+  import('../src/compose').then(({ default: compose }) => {
+    const theme = compose({}, cssFile)
+    expect(theme.theme).toEqual(cssFile.locals)
   })
 })
