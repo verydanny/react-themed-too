@@ -9,7 +9,8 @@
   "scripts": {
     "publish": "yarn build",
     "start": "yarn babel --watch ./src --out-dir lib",
-    "build": "yarn babel ./src --out-dir ./lib"
+    "build": "yarn babel ./src --out-dir ./lib",
+    "test": "jest"
   },
   "directories": {
     "lib": "./lib"
@@ -29,7 +30,16 @@
     "@babel/plugin-transform-modules-commonjs": "^7.0.0-rc.1",
     "@babel/preset-flow": "^7.0.0-rc.1",
     "@babel/preset-react": "^7.0.0-rc.1",
-    "flow-bin": "^0.78.0"
+    "babel-core": "^7.0.0-0",
+    "babel-jest": "^23.4.2",
+    "css-loader": "^1.0.0",
+    "flow-bin": "^0.78.0",
+    "jest": "^23.5.0",
+    "memory-fs": "^0.4.1",
+    "node-eval": "^2.0.0",
+    "regenerator-runtime": "^0.12.1",
+    "webpack": "^4.17.2",
+    "webpack-cli": "^3.1.0"
   },
   "dependencies": {
     "html-tokenize": "^2.0.0",
