@@ -1,17 +1,17 @@
 // @flow
-import * as React from 'react'
+import * as React from "react"
 
-import createThemed from './reactThemed'
-import { default as extractCriticalCSS } from './extractCritical'
-import { default as nodeStream } from './renderToStream'
-import { default as extractAll } from './extractCss'
+import createThemed from "./reactThemed"
+import { default as extractCriticalCSS } from "./extractCritical"
+import { default as nodeStream } from "./renderToStream"
+import { default as extractAll } from "./extractCss"
 
 const Context = React.createContext()
-const GlobalContext = typeof global !== 'undefined' ? global : {}
+const GlobalContext = typeof global !== "undefined" ? global : {}
 
-const extractCritical = extractCriticalCSS( GlobalContext )
-const renderToStream = nodeStream( GlobalContext )
-const extractCss = extractAll( GlobalContext )
+const extractCritical = extractCriticalCSS(GlobalContext)
+const renderToStream = nodeStream(GlobalContext)
+const extractCss = extractAll(GlobalContext)
 
 export const {
   themed,
@@ -19,7 +19,8 @@ export const {
   compose,
   globalCss,
   addGlobalCss,
-  webpackIdentity
-} = createThemed( Context, GlobalContext )
+  webpackIdentity,
+  webpackDevIdentity
+} = createThemed(Context, GlobalContext)
 
 export { extractCritical, renderToStream, extractCss }
