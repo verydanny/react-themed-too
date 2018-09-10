@@ -176,12 +176,12 @@ function compose(theme, target) {
 
             if (!acc.classCache) {
               acc.classCache = {
-                [id]: [localName, ids[0], ids[1]]
+                [id]: name
               }
             } else {
               acc.classCache = {
                 ...acc.classCache,
-                [id]: [localName, ids[0], ids[1]]
+                [id]: name
               }
             }
 
