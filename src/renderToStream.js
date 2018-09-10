@@ -32,12 +32,12 @@ const createRenderToStream = GlobalContext => () => {
       if (type === "open") {
         let match
         let fragment = data.toString()
-        let regex = new RegExp(`${contextKey}-([a-zA-Z0-9-]+)`, "gm")
+        let regex = new RegExp(`${contextKey}-([a-zA-Z0-9-+/]+)`, "gm")
 
 
         while ((match = regex.exec(fragment)) !== null) {
           if (match !== null && typeof ids[match[1]] === "undefined") {
-            ids[match[0]] = true
+            ids[match[1]] = true
           }
         }
 

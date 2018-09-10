@@ -176,17 +176,17 @@ function compose(theme, target) {
 
             if (!acc.classCache) {
               acc.classCache = {
-                [id]: name
+                [id]: [localName, ids[0], ids[1]]
               }
             } else {
               acc.classCache = {
                 ...acc.classCache,
-                [id]: name
+                [id]: [localName, ids[0], ids[1]]
               }
             }
 
             styleObject = {
-              [localName]: {
+              [id]: {
                 type: "css",
                 body: matchArr[localName] || false,
                 local: curr
@@ -268,10 +268,7 @@ function cssRulesGenerate(cssTokenizedArray) {
         // @NOTE: If it's just a normal selector, add its children if it has any
         //
         if (token.selectors !== void 0 && hasChildren) {
-          const buildChildren = simpleTokenizer.build(
-            token.children,
-            options
-          )
+          const buildChildren = simpleTokenizer.build(token.children, options)
 
           currentSelector = token.code
           output.cache.push(currentSelector)
