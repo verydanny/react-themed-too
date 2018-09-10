@@ -29,13 +29,19 @@ function createThemed(context: React.Context<any>, GlobalContext: global) {
 
   function addGlobalCss(...cssFile) {
     const globalCss = cssFile.reduce((acc, curr) => {
-      if (curr.locals && !isBrowser) {
+      if (!isBrowser) {
         const css = compileCssObject.call(curr, false)
 
-        compose(
-          GlobalContext[contextSecret].globalLocals,
-          curr.locals
-        )
+        try {
+          if (curr.locals) {
+            compose(
+              GlobalContext[contextSecret].globalLocals,
+              curr.locals
+            )
+          }
+        } catch(e) {
+
+        }
 
         return (acc += css.content ? css.content : "")
       } else if (isBrowser) {

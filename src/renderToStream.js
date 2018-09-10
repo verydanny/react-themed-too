@@ -7,13 +7,17 @@ import { contextSecret, contextKey } from "./const"
 const createRenderToStream = GlobalContext => () => {
   const tokenStream = tokenize()
   let globalCssInjected = false
+  let insed = {}
 
   const inlineStream = through(
     function write(thing) {
-      let [type, data] = thing
       const { styles, classCache, inserted, globalCss } = GlobalContext[
         contextSecret
       ]
+      let [type, data] = thing
+      let css = ""
+      let mediaQueries = ""
+      let ids = {}
 
       if (globalCss !== "" && !globalCssInjected) {
         this.queue(
@@ -26,59 +30,39 @@ const createRenderToStream = GlobalContext => () => {
       }
 
       if (type === "open") {
-        let css = ""
-        let mediaQueries = ""
-        let ids = {}
-
         let match
         let fragment = data.toString()
         let regex = new RegExp(`${contextKey}-([a-zA-Z0-9-]+)`, "gm")
 
+
         while ((match = regex.exec(fragment)) !== null) {
           if (match !== null && typeof ids[match[1]] === "undefined") {
-            ids[match[1]] = true
+            ids[match[0]] = true
           }
         }
 
-        Object.keys(ids).forEach(id => {
-          const currentID = classCache[id]
-
+        Object.keys(styles).forEach(id => {
           if (
-            styles[currentID] &&
-            typeof inserted[id] === "undefined" &&
-            ids[id]
+            styles[id] !== true &&
+            insed[id] === undefined &&
+            ids[id] === true
           ) {
-            // start cache
-            inserted[id] = {}
+            insed[id] = true
 
             const currentCss =
-              styles[currentID] &&
-              styles[currentID].body &&
-              styles[currentID].body.css
-                ? styles[currentID].body.css
+              styles[id] && styles[id].body && styles[id].body.css
+                ? styles[id].body.css
                 : ""
-            
+
             const currentMediaQuery =
-              styles[currentID] &&
-              styles[currentID].body &&
-              styles[currentID].body.mediaQuery
-                ? styles[currentID].body.mediaQuery
+              styles[id] && styles[id].body && styles[id].body.mediaQuery
+                ? styles[id].body.mediaQuery
                 : ""
 
-            css += currentCss !== "" || currentMediaQuery !== ""
-              ? currentCss + currentMediaQuery
-              : ""
-
-            // cache it
-            inserted[id].css = currentCss ? currentCss : ""
-            inserted[id].mediaQuery = currentMediaQuery ? currentMediaQuery : ""
-          } else if (
-            styles[currentID] &&
-            inserted[id] &&
-            ids[id]
-          ) {
-            css += inserted[id].css !== "" ? inserted[id].css : ""
-            css += inserted[id].mediaQuery !== "" ? inserted[id].mediaQuery : ""
+            css +=
+              currentCss !== "" || currentMediaQuery !== ""
+                ? currentCss + currentMediaQuery
+                : ""
           }
         })
 

@@ -123,42 +123,42 @@ function compose(theme, target) {
       return Object.keys(locals).reduce((acc, curr) => {
         acc.mediaQueries = {}
         const localName = locals[curr]
-        const match = new RegExp(`\\.${localName}(?!\\s?\\.${contextKey}).*$`)
+        const match = new RegExp(`\\.?${localName}(?!\\s?\\.${contextKey}).*$`)
 
-        if (css.content && css.content !== '') {
+        if (css.content && css.content !== "") {
           const tokenizedCssArray = tokenizer.tree(css.content)
           const cssRulesSelectorsObject = cssRulesGenerate(tokenizedCssArray)
           const matchArr =
             cssRulesSelectorsObject.cache &&
-              cssRulesSelectorsObject.cache.length > 0
+            cssRulesSelectorsObject.cache.length > 0
               ? cssRulesSelectorsObject.cache.reduce((cssAcc, cssSelector) => {
-                const cssRule = cssRulesSelectorsObject[cssSelector]
+                  const cssRule = cssRulesSelectorsObject[cssSelector]
 
-                const cssProp = cssRule && cssRule.css ? cssRule.css : false
+                  const cssProp = cssRule && cssRule.css ? cssRule.css : false
 
-                const mediaProp =
-                  cssRule && cssRule.mediaQuery ? cssRule.mediaQuery : false
+                  const mediaProp =
+                    cssRule && cssRule.mediaQuery ? cssRule.mediaQuery : false
 
-                if (match.test(cssSelector)) {
-                  if (!cssAcc[localName]) {
-                    cssAcc[localName] = {
-                      css: cssProp,
-                      mediaQuery: mediaProp
-                    }
-                  } else if (cssAcc[localName]) {
-                    cssAcc[localName] = {
-                      css: cssAcc[localName].css ?
-                        cssAcc[localName].css + cssProp
-                        : cssProp,
-                      mediaQuery: cssAcc[localName].mediaQuery ?
-                        cssAcc[localName].mediaQuery + mediaProp
-                        : mediaProp
+                  if (match.test(cssSelector)) {
+                    if (!cssAcc[localName]) {
+                      cssAcc[localName] = {
+                        css: cssProp,
+                        mediaQuery: mediaProp
+                      }
+                    } else if (cssAcc[localName]) {
+                      cssAcc[localName] = {
+                        css: cssAcc[localName].css
+                          ? cssAcc[localName].css + cssProp
+                          : cssProp,
+                        mediaQuery: cssAcc[localName].mediaQuery
+                          ? cssAcc[localName].mediaQuery + mediaProp
+                          : mediaProp
+                      }
                     }
                   }
-                }
 
-                return cssAcc
-              }, {})
+                  return cssAcc
+                }, {})
               : {}
 
           if (cssRulesSelectorsObject.mediaQueries.length > 0) {
@@ -233,20 +233,25 @@ function compose(theme, target) {
     } else {
       return composeThemes(target, theme)
     }
-  } catch(e) {
-    console.log("\x1b[33m", "Info >>> If you're getting a property 'locals' TypeError, this usually means improper file imports", "\x1b[0m")
-    console.log("\x1b[33m", "Please check how you're importing the css file, named imports when they're default will result in this error.", "\x1b[0m")
+  } catch (e) {
+    console.log(
+      "\x1b[33m",
+      "Info >>> If you're getting a property 'locals' TypeError, this usually means improper file imports",
+      "\x1b[0m"
+    )
+    console.log(
+      "\x1b[33m",
+      "Please check how you're importing the css file, named imports when they're default will result in this error.",
+      "\x1b[0m"
+    )
     console.log(e)
   }
 }
 
 function cssRulesGenerate(cssTokenizedArray) {
-  const selectorSeparator = ",",
-    ruleSeparator = ":",
-    space = " "
-
   let currentSelector = false,
     currentMediaSelector = false,
+    currentOtherSelector = false,
     output = {
       other: "",
       mediaQueries: [],
@@ -263,16 +268,18 @@ function cssRulesGenerate(cssTokenizedArray) {
         // @NOTE: If it's just a normal selector, add its children if it has any
         //
         if (token.selectors !== void 0 && hasChildren) {
+          const buildChildren = simpleTokenizer.build(
+            token.children,
+            options
+          )
+
           currentSelector = token.code
           output.cache.push(currentSelector)
 
           if (!output[currentSelector]) {
             output[currentSelector] = {
               ...output[currentSelector],
-              css: `${currentSelector}{${simpleTokenizer.build(
-                token.children,
-                options
-              )}}`
+              css: `${currentSelector}{${buildChildren}}`
             }
           }
         } else if (token.atRule !== void 0) {
@@ -294,7 +301,8 @@ function cssRulesGenerate(cssTokenizedArray) {
             token.children.forEach(child => {
               if (child.token === "{" && child.selectors !== void 0) {
                 currentSelector = child.code
-                !output.cache.includes && output.cache.push(child.code)
+                !output.cache.includes(currentSelector) &&
+                  output.cache.push(currentSelector)
 
                 if (output[currentSelector]) {
                   if (!output[currentSelector].mediaQuery) {
@@ -322,6 +330,22 @@ function cssRulesGenerate(cssTokenizedArray) {
                 }
               }
             })
+          } else if (hasChildren) {
+            //
+            // Put everything else in "other" output: keyframes, font-face, etc.
+            //
+            const builtOther = simpleTokenizer.build(token.children, options)
+            currentOtherSelector = token.code
+            !output.cache.includes(currentOtherSelector) &&
+              output.cache.push(currentOtherSelector)
+
+            if (output[currentOtherSelector]) {
+              output[currentOtherSelector].css += `${token.code} ${builtOther}`
+            } else if (!output[currentOtherSelector]) {
+              output[currentOtherSelector] = {
+                css: `${token.code} ${builtOther}`
+              }
+            }
           }
         }
         break
