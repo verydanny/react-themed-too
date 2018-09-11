@@ -297,6 +297,11 @@ function cssRulesGenerate(cssTokenizedArray) {
             //
             token.children.forEach(child => {
               if (child.token === "{" && child.selectors !== void 0) {
+                const buildQuery = simpleTokenizer.build(
+                  token.children,
+                  options
+                )
+
                 currentSelector = child.code
                 !output.cache.includes(currentSelector) &&
                   output.cache.push(currentSelector)
@@ -305,24 +310,15 @@ function cssRulesGenerate(cssTokenizedArray) {
                   if (!output[currentSelector].mediaQuery) {
                     output[
                       currentSelector
-                    ].mediaQuery = `${currentMediaSelector}{${simpleTokenizer.build(
-                      token.children,
-                      options
-                    )}}`
+                    ].mediaQuery = `${currentMediaSelector}{${buildQuery}}`
                   } else {
                     output[
                       currentSelector
-                    ].mediaQuery += `${currentMediaSelector}{${simpleTokenizer.build(
-                      token.children,
-                      options
-                    )}}`
+                    ].mediaQuery += `${currentMediaSelector}{${buildQuery}}`
                   }
                 } else if (!output[currentSelector]) {
                   output[currentSelector] = {
-                    mediaQuery: `${currentMediaSelector}{${simpleTokenizer.build(
-                      token.children,
-                      options
-                    )}}`
+                    mediaQuery: `${currentMediaSelector}{${buildQuery}}`
                   }
                 }
               }
@@ -330,6 +326,7 @@ function cssRulesGenerate(cssTokenizedArray) {
           } else if (hasChildren) {
             //
             // Put everything else in "other" output: keyframes, font-face, etc.
+            // This will be used in the future
             //
             const builtOther = simpleTokenizer.build(token.children, options)
             currentOtherSelector = token.code
