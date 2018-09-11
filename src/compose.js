@@ -123,7 +123,7 @@ function compose(theme, target) {
       return Object.keys(locals).reduce((acc, curr) => {
         acc.mediaQueries = {}
         const localName = locals[curr]
-        const match = new RegExp(`\\.?${localName}(?!\\s?\\.${contextKey}).*$`)
+        const match = new RegExp(`\\.?${localName}(?!\\s?\\..*${contextKey}).*$`)
 
         if (css.content && css.content !== "") {
           const tokenizedCssArray = tokenizer.tree(css.content)
