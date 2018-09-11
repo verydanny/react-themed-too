@@ -1,16 +1,9 @@
 // @flow
 import * as React from 'react'
+import hoist from 'hoist-non-react-statics'
+
 import type { CssLoaderT } from './compose'
-
 import compose from './compose'
-
-const whatReactComponent = (component) => {
-  if (typeof component !== 'string' && component.prototype && component.prototype.render) {
-    return "class"
-  }
-
-  return "stateless"
-}
 
 const pluck = (theme, keys) => {
   if ( theme && keys !== void 0 ) {
@@ -33,7 +26,7 @@ const match = (theme, regex) => (
 )
 
 const create = (Component, config) => {
-  const { context, compose } = config
+  const { context, compose, pure } = config
 
   const buildTheme = ( reactThemeContext ) => {
     const themes = config.themes.slice()
@@ -59,7 +52,31 @@ const create = (Component, config) => {
     return thisTheme
   }
 
-  return ({...props}) => (
+  class Themed extends React.PureComponent<any> {
+    // Only used for unit testing purposes
+    static WrappedComponent = Component
+    static displayName = `Themed(${Component.displayName || Component.name})`
+
+    constructor(props) {
+      super(props)
+    }
+
+    render() {
+      const { ...props } = this.props
+
+      return (
+        <context.Consumer>
+          {( theme ) => {
+            const thisTheme = buildTheme(theme)
+
+            return <Component theme={ thisTheme } { ...props }/>
+          }}
+        </context.Consumer>
+      )
+    }
+  }
+
+  const StatelessThemed = ({ ...props }) => (
     <context.Consumer WrappedComponent={ Component }>
       {(theme: CssLoaderT ) => {
         const thisTheme = buildTheme(theme)
@@ -68,6 +85,10 @@ const create = (Component, config) => {
       }}
     </context.Consumer>
   )
+
+  return pure ?
+    hoist(Themed, Component)
+    : StatelessThemed
 }
 
 type FactoryDefaultsT = {|
