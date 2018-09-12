@@ -4,6 +4,13 @@ import { isBrowser } from "./utils"
 import { contextKey } from "./const"
 
 const tokenizer = new simpleTokenizer()
+let btoa;
+
+if (!isBrowser) {
+  btoa = require('btoa')
+} else if (isBrowser) {
+  btoa = window && window.btoa ? window.btoa : {}
+}
 
 export type CssLoaderT = {
   locals: {
@@ -23,14 +30,13 @@ const mapCssToSource = (item, useSourceMap) => {
 
   if (useSourceMap && typeof btoa === "function") {
     const sourceMapping = toComment(cssMap)
-    const sourceUrls = cssMap.sources.map(
-      source => `/*# sourceURL=${cssMap.sourceRoot + source}*/`
-    )
+    const sourceUrls = cssMap.sources.map(source => `/*# sourceURL=${cssMap.sourceRoot + source}*/`)
 
-    return [content]
-      .concat(sourceUrls)
-      .concat([sourceMapping])
-      .join("\n")
+    return {
+      src: content,
+      srcUrl: sourceUrls.join("\n"),
+      srcMapping: sourceMapping,
+    }
   }
 
   return [content].join("\n")
@@ -88,12 +94,11 @@ const composeThemes = (target, mixin) => {
   }, target)
 }
 
-export function compileCssObject(useSourceMap) {
+export function compileCssObject(useSourceMap: boolean) {
   let cssObject = {}
 
   for (let i = 0; i < this.length; ++i) {
     const content = mapCssToSource(this[i], useSourceMap)
-
     //
     // @NOTE: This mediaQuery might be an issue in the future
     //
@@ -101,7 +106,12 @@ export function compileCssObject(useSourceMap) {
       cssObject.mediaQuery = `@media ${this[i][2]} { ${content} }`
     }
 
-    cssObject.content = content
+    cssObject.content = content.src ? content.src : content
+    
+    if (useSourceMap) {
+      cssObject.sourceUrls = content.srcUrl ? content.srcUrl : '',
+      cssObject.sourceMapping = content.srcMapping ? content.srcMapping : ''
+    }
   }
 
   return cssObject
@@ -118,16 +128,24 @@ function compose(theme, target) {
   try {
     if (theme.locals) {
       const locals: Object = theme.locals
-      const css = compileCssObject.call(theme, false)
+      const mode = process.env.NODE_ENV === 'development' ? true : false
+      const css = compileCssObject.call(theme, mode)
+      console.log(css)
+      const tokenizedCssArray =
+        css.content && css.content !== "" ? tokenizer.tree(css.content) : []
+      const cssRulesSelectorsObject = tokenizedCssArray.length > 0 ? cssDingus({
+        cssTokenizedArray: tokenizedCssArray,
+        options: { minify: true }
+      }) : {}
 
       return Object.keys(locals).reduce((acc, curr) => {
         acc.mediaQueries = {}
         const localName = locals[curr]
-        const match = new RegExp(`\\.?${localName}(?!\\s?\\..*${contextKey}-[A-Za-z0-9+/-]{2,6}).*$`)
+        const match = new RegExp(
+          `\\.?${localName}(?!\\s?\\..*${contextKey}-[A-Za-z0-9+/-]{2,6}).*$`
+        )
 
         if (css.content && css.content !== "") {
-          const tokenizedCssArray = tokenizer.tree(css.content)
-          const cssRulesSelectorsObject = cssRulesGenerate(tokenizedCssArray)
           const matchArr =
             cssRulesSelectorsObject.cache &&
             cssRulesSelectorsObject.cache.length > 0
@@ -248,106 +266,101 @@ function compose(theme, target) {
   }
 }
 
-function cssRulesGenerate(cssTokenizedArray) {
+let cssDefaultOutput = {
+  mediaQueries: [],
+  cache: []
+}
+
+type cssDingusT = {
+  target?: {
+    [x: string]: {
+      css?: string,
+      mediaQuery?: string,
+      misc?: string
+    },
+    cache: Array<string>,
+    mediaQueries: Array<string>
+  },
+  cssTokenizedArray: Array<cssRulesArrayT> & Array<any>,
+  options?: {
+    minify?: boolean,
+    query?: string | boolean
+  }
+}
+
+type cssRulesArrayT = {
+  token: string,
+  code: string,
+  index: number,
+  children?: Array<cssRulesArrayT>,
+  selectors?: Array<string>,
+  atRule?: string,
+  atValues?: Array<string>
+}
+
+function cssDingus(
+  {
+    target = cssDefaultOutput,
+    cssTokenizedArray,
+    options = { minify: true, query: false }
+  }: cssDingusT = {
+    target: cssDefaultOutput,
+    cssTokenizedArray: [],
+    options: { minify: true }
+  }
+) {
   let currentSelector = false,
     currentMediaSelector = false,
-    currentOtherSelector = false,
-    output = {
-      other: "",
-      mediaQueries: [],
-      cache: []
-    },
-    options = { minify: true }
+    currentOtherSelector = false
 
-  cssTokenizedArray.forEach(token => {
-    const hasChildren = token.children ? true : false
+  return cssTokenizedArray.reduce((acc, curr) => {
+    const children = curr.children
+      ? simpleTokenizer.build(curr.children, { minify: options.minify })
+      : false
 
-    switch (token.token) {
+    switch (curr.token) {
       case "{":
-        //
-        // @NOTE: If it's just a normal selector, add its children if it has any
-        //
-        if (token.selectors !== void 0 && hasChildren) {
-          const buildChildren = simpleTokenizer.build(token.children, options)
+        if (curr.selectors !== void 0 && children) {
+          currentSelector =
+            curr.selectors.length === 1 ? curr.selectors[0] : curr.code
+          acc.cache.push(currentSelector)
 
-          currentSelector = token.code
-          output.cache.push(currentSelector)
+          const currentSelectorString = `${currentSelector}{${children}}`
 
-          if (!output[currentSelector]) {
-            output[currentSelector] = {
-              ...output[currentSelector],
-              css: `${currentSelector}{${buildChildren}}`
+          if (!acc[currentSelector]) {
+            acc[currentSelector] = {
+              css: `${currentSelector}{${children}}`
             }
+          } else if (acc[currentSelector] && options.query) {
+            acc[
+              currentSelector
+            ].css += `${options.query.toString()}{${currentSelector}{${children}}}`
           }
-        } else if (token.atRule !== void 0) {
-          //
-          // @NOTE: if it's a media selector, add it to mediaQuery object
-          //
-          if (token.atRule === "media" && hasChildren) {
-            currentMediaSelector = token.code
+        } else if (curr.atRule !== void 0) {
+          if (curr.atRule === "media" && children) {
+            currentMediaSelector =
+              curr.atValues.length === 1
+                ? `@media ${curr.atValues[0]}`
+                : curr.code
+            !acc.cache.includes(currentMediaSelector.toString()) && acc.cache.push(currentMediaSelector.toString())
 
-            if (
-              output.mediaQueries &&
-              !output.mediaQueries.includes(currentMediaSelector)
-            ) {
-              output.mediaQueries.push(currentMediaSelector)
-            }
-            //
-            // @NOTE: I'm assuming things only go 1 level deep, need recursive solution
-            //
-            token.children.forEach(child => {
-              if (child.token === "{" && child.selectors !== void 0) {
-                const buildQuery = simpleTokenizer.build(
-                  token.children,
-                  options
-                )
-
-                currentSelector = child.code
-                !output.cache.includes(currentSelector) &&
-                  output.cache.push(currentSelector)
-
-                if (output[currentSelector]) {
-                  if (!output[currentSelector].mediaQuery) {
-                    output[
-                      currentSelector
-                    ].mediaQuery = `${currentMediaSelector}{${buildQuery}}`
-                  } else {
-                    output[
-                      currentSelector
-                    ].mediaQuery += `${currentMediaSelector}{${buildQuery}}`
-                  }
-                } else if (!output[currentSelector]) {
-                  output[currentSelector] = {
-                    mediaQuery: `${currentMediaSelector}{${buildQuery}}`
-                  }
-                }
+            return cssDingus({
+              target: target,
+              cssTokenizedArray: curr.children,
+              options: {
+                minify: true,
+                query: currentMediaSelector
               }
             })
-          } else if (hasChildren) {
-            //
-            // Put everything else in "other" output: keyframes, font-face, etc.
-            // This will be used in the future
-            //
-            const builtOther = simpleTokenizer.build(token.children, options)
-            currentOtherSelector = token.code
-            !output.cache.includes(currentOtherSelector) &&
-              output.cache.push(currentOtherSelector)
-
-            if (output[currentOtherSelector]) {
-              output[currentOtherSelector].css += `${token.code} ${builtOther}`
-            } else if (!output[currentOtherSelector]) {
-              output[currentOtherSelector] = {
-                css: `${token.code} ${builtOther}`
-              }
-            }
           }
+        } else if (children) {
+          // basically everything else
         }
-        break
       default:
     }
-  })
 
-  return output
+    return acc
+  }, target)
 }
 
 export default (target: Object = {}, ...themes: Array<CssLoaderT>) => {
