@@ -4,12 +4,12 @@ import { isBrowser } from "./utils"
 import { contextKey } from "./const"
 
 const tokenizer = new simpleTokenizer()
-let btoa;
+let btoa
 
 if (!isBrowser) {
   btoa = require('btoa')
 } else if (isBrowser) {
-  btoa = window && window.btoa ? window.btoa : {}
+  btoa = window.btoa
 }
 
 export type CssLoaderT = {
@@ -20,12 +20,20 @@ export type CssLoaderT = {
   i?: (modules: string | Object, mediaQuery: string) => Array<string>
 }
 
-const mapCssToSource = (item, useSourceMap) => {
+type mapCssToSourceT = {
+  src: string,
+  srcUrl?: string,
+  srcMapping?: string
+}
+
+const mapCssToSource = (item, useSourceMap): mapCssToSourceT => {
   const content = item[1] || ""
   const cssMap = item[3]
 
   if (!cssMap) {
-    return content
+    return {
+      src: content
+    }
   }
 
   if (useSourceMap && typeof btoa === "function") {
@@ -39,7 +47,9 @@ const mapCssToSource = (item, useSourceMap) => {
     }
   }
 
-  return [content].join("\n")
+  return {
+    src: [content].join("\n")
+  }
 }
 
 const toComment = sourceMap => {
@@ -49,7 +59,7 @@ const toComment = sourceMap => {
   return `/*# ${data} */`
 }
 
-const combineFunctions = (fn1, fn2) => () => {
+const combineFunctions = (fn1: () => void, fn2: () => void) => () => {
   const res1 = fn1()
   const res2 = fn2()
 
@@ -102,8 +112,8 @@ export function compileCssObject(useSourceMap: boolean) {
     //
     // @NOTE: This mediaQuery might be an issue in the future
     //
-    if (this[i][2]) {
-      cssObject.mediaQuery = `@media ${this[i][2]} { ${content} }`
+    if (this[i][2] && content.src) {
+      cssObject.mediaQuery = `@media ${this[i][2]} { ${content.src} }`
     }
 
     cssObject.content = content.src ? content.src : content
@@ -301,11 +311,11 @@ function cssDingus(
     options: { minify: true }
   }
 ) {
-  let currentSelector = false,
+  let currentSelector: string | boolean = false,
     currentMediaSelector = false,
     currentOtherSelector = false
 
-  return cssTokenizedArray.reduce((acc, curr) => {
+  return cssTokenizedArray.reduce((acc, curr: cssRulesArrayT) => {
     const children = curr.children
       ? simpleTokenizer.build(curr.children, { minify: options.minify })
       : false
@@ -327,7 +337,7 @@ function cssDingus(
             ].css += `${options.query.toString()}{${currentSelector}{${children}}}`
           }
         } else if (curr.atRule !== void 0) {
-          if (curr.atRule === "media" && children) {
+          if (curr.atRule === "media" && children && curr.atValues) {
             currentMediaSelector =
               curr.atValues.length === 1
                 ? `@media ${curr.atValues[0]}`
@@ -354,7 +364,7 @@ function cssDingus(
   }, target)
 }
 
-export default (target: Object = {}, ...themes: Array<CssLoaderT>) => {
+export default (target: Object = {}, ...themes: Array<any>) => {
   if (!isBrowser) {
     return themes.reduce((acc, curr) => {
       if (!acc) {
