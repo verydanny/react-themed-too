@@ -107,7 +107,7 @@ export function compileCssObject(useSourceMap: boolean) {
     }
 
     cssObject.content = content.src ? content.src : content
-    
+
     if (useSourceMap) {
       cssObject.sourceUrls = content.srcUrl ? content.srcUrl : '',
       cssObject.sourceMapping = content.srcMapping ? content.srcMapping : ''
@@ -128,9 +128,8 @@ function compose(theme, target) {
   try {
     if (theme.locals) {
       const locals: Object = theme.locals
-      const mode = process.env.NODE_ENV === 'development' ? true : false
-      const css = compileCssObject.call(theme, mode)
-      console.log(css)
+      const sourceMap = process.env.NODE_ENV === 'development' ? true : false
+      const css = compileCssObject.call(theme, sourceMap)
       const tokenizedCssArray =
         css.content && css.content !== "" ? tokenizer.tree(css.content) : []
       const cssRulesSelectorsObject = tokenizedCssArray.length > 0 ? cssDingus({
@@ -154,23 +153,16 @@ function compose(theme, target) {
 
                   const cssProp = cssRule && cssRule.css ? cssRule.css : false
 
-                  const mediaProp =
-                    cssRule && cssRule.mediaQuery ? cssRule.mediaQuery : false
-
                   if (match.test(cssSelector)) {
                     if (!cssAcc[localName]) {
                       cssAcc[localName] = {
-                        css: cssProp,
-                        mediaQuery: mediaProp
+                        css: cssProp
                       }
                     } else if (cssAcc[localName]) {
                       cssAcc[localName] = {
-                        css: cssAcc[localName].css
-                          ? cssAcc[localName].css + cssProp
-                          : cssProp,
-                        mediaQuery: cssAcc[localName].mediaQuery
-                          ? cssAcc[localName].mediaQuery + mediaProp
-                          : mediaProp
+                        css: cssAcc[localName].css === cssProp
+                          ? cssAcc[localName].css
+                          : cssAcc[localName].css + cssProp
                       }
                     }
                   }
@@ -325,8 +317,6 @@ function cssDingus(
             curr.selectors.length === 1 ? curr.selectors[0] : curr.code
           acc.cache.push(currentSelector)
 
-          const currentSelectorString = `${currentSelector}{${children}}`
-
           if (!acc[currentSelector]) {
             acc[currentSelector] = {
               css: `${currentSelector}{${children}}`
@@ -342,7 +332,8 @@ function cssDingus(
               curr.atValues.length === 1
                 ? `@media ${curr.atValues[0]}`
                 : curr.code
-            !acc.cache.includes(currentMediaSelector.toString()) && acc.cache.push(currentMediaSelector.toString())
+            !acc.cache.includes(currentMediaSelector.toString())
+              && acc.cache.push(currentMediaSelector.toString())
 
             return cssDingus({
               target: target,

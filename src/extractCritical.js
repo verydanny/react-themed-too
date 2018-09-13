@@ -8,8 +8,7 @@ const extractCritical = (GlobalContext: global) => (html: string) => {
   let o = {
     html,
     body: {
-      css: "",
-      mediaQueries: ""
+      css: ""
     }
   }
   let match
@@ -40,35 +39,13 @@ const extractCritical = (GlobalContext: global) => (html: string) => {
             ? styles[currentID].body.css
             : false
 
-        const currentMediaQuery =
-          styles[currentID] &&
-          styles[currentID].body &&
-          styles[currentID].body.mediaQuery
-            ? styles[currentID].body.mediaQuery
-            : false
-
         if (currentCss) {
           o.body.css += currentCss
           inserted[id].css = currentCss
-
-          if (currentMediaQuery) {
-            o.body.mediaQueries += currentMediaQuery
-            inserted[id].mediaQuery = currentMediaQuery
-          }
-
-          return true
-        } else if (currentMediaQuery) {
-          o.body.css += currentMediaQuery
-          inserted[id].mediaQuery = currentMediaQuery
-
-          return true
         }
       }
     } else if (ids[id] && inserted[id] && classCache[id]) {
       o.body.css += inserted[id].css ? inserted[id].css : ""
-      o.body.mediaQueries += inserted[id].mediaQuery
-        ? inserted[id].mediaQuery
-        : ""
     }
   })
 

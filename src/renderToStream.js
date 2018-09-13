@@ -54,14 +54,9 @@ const createRenderToStream = GlobalContext => () => {
                 ? styles[id].body.css
                 : ""
 
-            const currentMediaQuery =
-              styles[id] && styles[id].body && styles[id].body.mediaQuery
-                ? styles[id].body.mediaQuery
-                : ""
-
             css +=
-              currentCss !== "" || currentMediaQuery !== ""
-                ? currentCss + currentMediaQuery
+              currentCss !== ""
+                ? currentCss
                 : ""
           }
         })
