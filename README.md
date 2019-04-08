@@ -1,3 +1,5 @@
+## WARNING: Project on hold, many bugs.
+
 # react-themed-too
 
 Theme management and css injection utilizing css-loader.
